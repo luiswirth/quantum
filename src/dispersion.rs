@@ -7,7 +7,9 @@ use crate::{
 /// says which way the wave travels.
 #[derive(Clone, Copy, Debug)]
 pub enum Dispersion {
+  /// `omega(k) = (hbar k^2) / (2 m)`
   FreeParticle { mass: f64 },
+  /// `omega(k) = c abs(k)`
   Light { speed: f64 },
 }
 
@@ -29,7 +31,7 @@ impl Dispersion {
     }
   }
 
-  /// Light has a kink at rest, where the derivative does not exist.
+  /// `v_g = (dif omega) / (dif k)`, which light leaves undefined at `k = 0`.
   pub fn group_velocity(&self, wavenumber: f64) -> f64 {
     match *self {
       Self::FreeParticle { mass } => HBAR * wavenumber / mass,
@@ -37,7 +39,7 @@ impl Dispersion {
     }
   }
 
-  /// The second derivative of the dispersion relation.
+  /// `(dif^2 omega) / (dif k^2)`
   pub fn curvature(&self, _wavenumber: f64) -> f64 {
     match *self {
       Self::FreeParticle { mass } => HBAR / mass,
@@ -45,14 +47,17 @@ impl Dispersion {
     }
   }
 
+  /// `m^* = hbar / ((dif^2 omega) / (dif k^2))`
   pub fn effective_mass(&self, wavenumber: f64) -> f64 {
     HBAR / self.curvature(wavenumber)
   }
 
+  /// `E(p) = hbar omega(p / hbar)`
   pub fn energy(&self, momentum: f64) -> f64 {
     HBAR * self.frequency(momentum / HBAR)
   }
 
+  /// `v_p = omega / k`
   pub fn phase_velocity(&self, wavenumber: f64) -> f64 {
     self.frequency(wavenumber) / wavenumber
   }

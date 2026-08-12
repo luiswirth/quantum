@@ -1,7 +1,7 @@
 use crate::{Complex, units::HBAR};
 use std::f64::consts::TAU;
 
-/// The wave `exp(i (k x - omega t))`, whose sign convention holds crate wide.
+/// `psi(x, t) = e^(i (k x - omega t))`, whose sign convention holds crate wide.
 #[derive(Clone, Copy, Debug)]
 pub struct PlaneWave {
   pub wavenumber: f64,
@@ -16,6 +16,7 @@ impl PlaneWave {
     }
   }
 
+  /// `k x - omega t`
   pub fn phase(&self, position: f64, time: f64) -> f64 {
     self.wavenumber * position - self.frequency * time
   }
@@ -23,20 +24,25 @@ impl PlaneWave {
     Complex::from_polar(1.0, self.phase(position, time))
   }
 
+  /// `p = hbar k`
   pub fn momentum(&self) -> f64 {
     HBAR * self.wavenumber
   }
+  /// `E = hbar omega`
   pub fn energy(&self) -> f64 {
     HBAR * self.frequency
   }
 
+  /// `lambda = (2 pi) / k`
   pub fn wavelength(&self) -> f64 {
     TAU / self.wavenumber
   }
+  /// `T = (2 pi) / omega`
   pub fn period(&self) -> f64 {
     TAU / self.frequency
   }
 
+  /// `v_p = omega / k`
   pub fn phase_velocity(&self) -> f64 {
     self.frequency / self.wavenumber
   }
