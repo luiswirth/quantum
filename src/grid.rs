@@ -74,6 +74,12 @@ impl<D: Domain> Grid<D> {
     (0..self.npoints).map(|index| self.coordinate(index))
   }
 
+  /// The sample a coordinate falls on, wrapping as the grid does.
+  pub fn nearest_index(&self, coordinate: f64) -> usize {
+    let steps = (coordinate / self.spacing).round() as i64;
+    steps.rem_euclid(self.npoints as i64) as usize
+  }
+
   /// The grid of the other domain, on which discreteness and periodicity trade
   /// places: `dif k = (2 pi) / L` and `L_k = (2 pi) / (dif x)`.
   pub fn dual(&self) -> Grid<D::Dual> {

@@ -1,4 +1,5 @@
 pub mod combination;
+pub mod dirac;
 pub mod dispersion;
 pub mod grid;
 pub mod grid_state;
