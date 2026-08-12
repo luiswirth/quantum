@@ -1,5 +1,5 @@
 # /// script
-# dependencies = ["numpy", "matplotlib"]
+# dependencies = ["numpy", "matplotlib", "pillow"]
 # ///
 """The wave function itself, the camera following the packet.
 
@@ -10,9 +10,9 @@ own envelope at half the speed.
 
 import pathlib
 
-import matplotlib.animation as animation
 import matplotlib.pyplot as plt
 import numpy as np
+from PIL import Image
 
 out = pathlib.Path(__file__).resolve().parent.parent / "out"
 psi = np.load(out / "psi.npy")
@@ -30,7 +30,7 @@ height = np.abs(psi).max()
 
 # A fixed axes rectangle, since an automatic layout would resize it whenever
 # the tick labels change width.
-figure = plt.figure(figsize=(6.5, 3.6), dpi=100)
+figure = plt.figure(figsize=(6.5, 3.6), dpi=150)
 axes = figure.add_axes((0.10, 0.14, 0.87, 0.78))
 (real,) = axes.plot([], [], color="#3b6ea5", linewidth=1.2, label=r"$\Re\,\psi$")
 (upper,) = axes.plot([], [], color="#111111", linewidth=1.6, label=r"$\pm|\psi|$")
@@ -47,12 +47,20 @@ def draw(frame):
     upper.set_data(position, np.abs(psi[frame]))
     lower.set_data(position, -np.abs(psi[frame]))
     clock.set_text(f"t = {time[frame]:5.1f} fs")
-    return real, upper, lower, clock
+    figure.canvas.draw()
+    return Image.frombuffer(
+        "RGBA", figure.canvas.get_width_height(), figure.canvas.buffer_rgba()
+    ).convert("RGB")
 
 
-frames = range(0, len(time), 2)
-animation.FuncAnimation(figure, draw, frames=frames, blit=False).save(
-    out / "packet.gif", writer=animation.PillowWriter(fps=20)
+frames = [draw(index) for index in range(len(time))]
+frames[0].save(
+    out / "packet.webp",
+    save_all=True,
+    append_images=frames[1:],
+    duration=40,
+    loop=0,
+    lossless=True,
+    method=6,
 )
-draw(len(time) // 2)
-figure.savefig(out / "packet.png")
+frames[len(frames) // 2].save(out / "packet.png")
