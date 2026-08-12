@@ -1,5 +1,5 @@
 use quantum::Complex;
-use quantum::dirac::{Comb, Dirac, Event, Impulse};
+use quantum::dirac::{Comb, Dirac, Event, Excitation, Impulse, Source};
 use quantum::grid::{Grid, Position};
 use quantum::plane_wave::{HarmonicWave, PlaneWave};
 use std::f64::consts::TAU;
@@ -66,4 +66,16 @@ fn the_event_and_the_plane_wave_pair_to_the_same_number() {
   let taken = event.apply(|time, position| wave.at(time, position));
   let transformed = event.transform_at(wave.frequency, wave.harmonic.wavenumber);
   assert!((taken - transformed.conj()).norm() < 1e-12);
+}
+
+/// An excitation firing twice at the same place is a source that beats in
+/// time: its transform vanishes where the two firings cancel.
+#[test]
+fn two_firings_interfere_in_frequency() {
+  let excitation = Excitation::new(vec![
+    Source::new(Complex::ONE, Event::new(0.0, Dirac::new(0.0))),
+    Source::new(Complex::ONE, Event::new(1.0, Dirac::new(0.0))),
+  ]);
+  assert!((excitation.transform_at(0.0, 0.0).norm() - 2.0).abs() < 1e-12);
+  assert!(excitation.transform_at(std::f64::consts::PI, 0.0).norm() < 1e-12);
 }

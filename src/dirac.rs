@@ -118,6 +118,23 @@ impl Source {
   }
 }
 
+/// `sum_j c_j delta(t - t_j) delta(x - x_j)`
+pub type Excitation = Combination<Event>;
+
+impl Excitation {
+  pub fn apply(&self, test: impl Fn(f64, f64) -> Complex + Copy) -> Complex {
+    self.terms.iter().map(|term| term.apply(test)).sum()
+  }
+
+  pub fn transform_at(&self, frequency: f64, wavenumber: f64) -> Complex {
+    self
+      .terms
+      .iter()
+      .map(|term| term.transform_at(frequency, wavenumber))
+      .sum()
+  }
+}
+
 impl Mul<Complex> for Dirac {
   type Output = Impulse;
   fn mul(self, amplitude: Complex) -> Impulse {
