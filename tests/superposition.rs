@@ -1,6 +1,6 @@
 use quantum::Complex;
 use quantum::dispersion::Dispersion;
-use quantum::plane_wave::Mode;
+use quantum::plane_wave::{Mode, PlaneWave};
 use quantum::superposition::Superposition;
 
 fn positions() -> impl Iterator<Item = f64> {
@@ -115,4 +115,48 @@ fn the_levels_build_on_each_other() {
   for position in positions() {
     assert!((built.at(position, 0.6) - direct.at(position, 0.6)).norm() < 1e-12);
   }
+}
+
+/// The moduli are all the expectations see, so evolution leaves them alone.
+#[test]
+fn momentum_and_energy_are_conserved() {
+  let superposition = Superposition::in_medium(
+    Dispersion::electron(),
+    [
+      (Complex::ONE, 1.0),
+      (Complex::new(0.0, 2.0), 2.5),
+      (Complex::ONE, -0.5),
+    ],
+  );
+  let momentum = superposition.expectation(PlaneWave::momentum);
+  let energy = superposition.expectation(PlaneWave::energy);
+  let uncertainty = superposition.uncertainty(PlaneWave::momentum);
+  for time in [0.3, 2.0, 11.0] {
+    let waited = superposition.clone().evolved(time);
+    assert!((waited.expectation(PlaneWave::momentum) - momentum).abs() < 1e-12);
+    assert!((waited.expectation(PlaneWave::energy) - energy).abs() < 1e-12);
+    assert!((waited.uncertainty(PlaneWave::momentum) - uncertainty).abs() < 1e-12);
+  }
+}
+
+/// A single mode is a state of definite momentum.
+#[test]
+fn one_mode_has_no_uncertainty() {
+  let superposition =
+    Superposition::in_medium(Dispersion::electron(), [(Complex::new(3.0, 4.0), 2.0)]);
+  assert!((superposition.total_intensity() - 25.0).abs() < 1e-12);
+  assert!((superposition.expectation(|wave| wave.wavenumber) - 2.0).abs() < 1e-12);
+  assert!(superposition.uncertainty(|wave| wave.wavenumber).abs() < 1e-12);
+}
+
+/// Two modes weighted equally sit halfway between them, and the uncertainty is
+/// their half separation.
+#[test]
+fn two_modes_straddle_their_center() {
+  let superposition = Superposition::in_medium(
+    Dispersion::electron(),
+    [(Complex::ONE, 1.0), (Complex::ONE, 3.0)],
+  );
+  assert!((superposition.expectation(|wave| wave.wavenumber) - 2.0).abs() < 1e-12);
+  assert!((superposition.uncertainty(|wave| wave.wavenumber) - 1.0).abs() < 1e-12);
 }

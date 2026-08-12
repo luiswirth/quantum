@@ -70,6 +70,11 @@ impl Mode {
     self.amplitude * self.wave.at(position, time)
   }
 
+  /// `abs(c)^2`
+  pub fn intensity(&self) -> f64 {
+    self.amplitude.norm_sqr()
+  }
+
   pub fn evolve(&mut self, time: f64) {
     self.amplitude *= self.wave.phase_factor(time);
   }
