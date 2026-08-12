@@ -1,4 +1,8 @@
-use crate::{Complex, combination::Weighted, units::HBAR};
+use crate::{
+  Complex,
+  combination::{Combination, Weighted},
+  units::HBAR,
+};
 use std::f64::consts::TAU;
 use std::ops::Mul;
 
@@ -73,6 +77,19 @@ impl PlaneWave {
   /// `v_p = omega / k`
   pub fn phase_velocity(&self) -> f64 {
     self.frequency / self.harmonic.wavenumber
+  }
+}
+
+/// `psi(x) = sum_n c_n e^(i k_n x)`, a state across space at one instant.
+pub type Waveform = Combination<HarmonicWave>;
+
+impl Waveform {
+  pub fn at(&self, position: f64) -> Complex {
+    self
+      .terms
+      .iter()
+      .map(|term| term.amplitude * term.element.at(position))
+      .sum()
   }
 }
 

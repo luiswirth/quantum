@@ -224,3 +224,22 @@ fn the_grid_aliases_what_it_cannot_resolve() {
     assert!((here - there).norm() < 1e-10);
   }
 }
+
+/// A history seen at one instant, and an instant given a history by the
+/// medium, are inverse to each other.
+#[test]
+fn the_instant_and_the_history_determine_each_other() {
+  let dispersion = Dispersion::electron();
+  let superposition = Superposition::in_medium(
+    dispersion,
+    [(Complex::ONE, 1.5), (Complex::I, -0.5), (Complex::ONE, 3.0)],
+  );
+  for time in [0.0, 0.7, 4.0] {
+    let waveform = superposition.snapshot(time);
+    let lifted = waveform.lifted(dispersion);
+    for position in positions() {
+      assert!((waveform.at(position) - superposition.at(time, position)).norm() < 1e-12);
+      assert!((lifted.at(0.0, position) - superposition.at(time, position)).norm() < 1e-12);
+    }
+  }
+}
