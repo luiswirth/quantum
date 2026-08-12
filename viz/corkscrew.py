@@ -13,6 +13,8 @@ import pathlib
 import matplotlib.pyplot as plt
 import movie
 import numpy as np
+from matplotlib.colors import hsv_to_rgb
+from mpl_toolkits.mplot3d.art3d import Line3DCollection
 
 out = pathlib.Path(__file__).resolve().parent.parent / "out"
 psi = np.load(out / "psi.npy")
@@ -63,7 +65,10 @@ axes.set_xlabel("position [nm]", labelpad=8)
 axes.set_ylabel(r"$\Re\,\psi$", labelpad=2)
 axes.set_zlabel(r"$\Im\,\psi$", labelpad=2)
 
-(helix,) = axes.plot([], [], [], color="#1f4e79", linewidth=1.8)
+# The hue is the angle the helix already turns through, so the two pictures of
+# the phase can be read against each other.
+helix = Line3DCollection([], linewidth=1.8)
+axes.add_collection(helix)
 (shadow,) = axes.plot([], [], [], color="#111111", linewidth=1.0, alpha=0.55)
 (spine,) = axes.plot([], [], [], color="#999999", linewidth=0.8)
 clock = figure.text(0.5, 0.93, "", ha="center", fontsize=12)
@@ -74,7 +79,12 @@ for frame in range(len(time)):
     x = position[inside]
     value = psi[frame][inside]
     axes.set_xlim(center[frame] - window, center[frame] + window)
-    helix.set_data_3d(x, value.real, value.imag)
+    curve = np.stack([x, value.real, value.imag], axis=-1)
+    helix.set_segments(np.stack([curve[:-1], curve[1:]], axis=1))
+    angle = (np.angle(value[:-1]) + np.pi) / (2 * np.pi)
+    helix.set_color(
+        hsv_to_rgb(np.stack([angle, np.ones_like(angle), np.ones_like(angle)], -1))
+    )
     # The real part alone, laid on the far wall, is the picture a plot of
     # `Re psi` gives.
     shadow.set_data_3d(x, value.real, np.full_like(x, -1.15 * height))
