@@ -1,10 +1,7 @@
 use crate::{Complex, units::HBAR};
 use std::f64::consts::TAU;
 
-/// The wave `exp(i (k x - omega t))`, of unit modulus everywhere.
-///
-/// The sign of the exponent is the convention the whole crate is written in:
-/// a positive wavenumber moves the wave towards positive `x`.
+/// The wave `exp(i (k x - omega t))`, whose sign convention holds crate wide.
 #[derive(Clone, Copy, Debug)]
 pub struct PlaneWave {
   pub wavenumber: f64,
@@ -26,11 +23,9 @@ impl PlaneWave {
     Complex::from_polar(1.0, self.phase(position, time))
   }
 
-  /// de Broglie.
   pub fn momentum(&self) -> f64 {
     HBAR * self.wavenumber
   }
-  /// Planck-Einstein.
   pub fn energy(&self) -> f64 {
     HBAR * self.frequency
   }
@@ -42,7 +37,6 @@ impl PlaneWave {
     TAU / self.frequency
   }
 
-  /// The speed a surface of constant phase moves at.
   pub fn phase_velocity(&self) -> f64 {
     self.frequency / self.wavenumber
   }

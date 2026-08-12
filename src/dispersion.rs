@@ -3,17 +3,11 @@ use crate::{
   units::{ELECTRON_MASS, HBAR, LIGHT_SPEED},
 };
 
-/// The relation `omega(k)` tying a wave's frequency to its wavenumber, which
-/// is where the physics of the medium enters and the only place it does as
-/// long as the medium is homogeneous.
-///
-/// Only the positive frequency branch is carried, so the sign of the
-/// wavenumber alone says which way the wave travels.
+/// Only the positive frequency branch, so the sign of the wavenumber alone
+/// says which way the wave travels.
 #[derive(Clone, Copy, Debug)]
 pub enum Dispersion {
-  /// `omega = hbar k^2 / 2 m`
   FreeParticle { mass: f64 },
-  /// `omega = c |k|`, with `c` the speed in the medium
   Light { speed: f64 },
 }
 
@@ -35,10 +29,7 @@ impl Dispersion {
     }
   }
 
-  /// The speed a packet centered on this wavenumber travels at, `d omega / d k`.
-  ///
-  /// The light branch has a kink at rest, where the two directions disagree
-  /// and the derivative does not exist.
+  /// Light has a kink at rest, where the derivative does not exist.
   pub fn group_velocity(&self, wavenumber: f64) -> f64 {
     match *self {
       Self::FreeParticle { mass } => HBAR * wavenumber / mass,
@@ -46,8 +37,7 @@ impl Dispersion {
     }
   }
 
-  /// `d^2 omega / d k^2`, the rate neighbouring wavenumbers drift apart at,
-  /// and so the rate a packet spreads at.
+  /// The second derivative of the dispersion relation.
   pub fn curvature(&self, _wavenumber: f64) -> f64 {
     match *self {
       Self::FreeParticle { mass } => HBAR / mass,
@@ -55,22 +45,14 @@ impl Dispersion {
     }
   }
 
-  /// The mass a packet responds with, `hbar / curvature`, which for the free
-  /// particle is the mass itself and in a band is what replaces it.
-  ///
-  /// A medium that does not bend the relation gives an infinite one: nothing
-  /// spreads there.
   pub fn effective_mass(&self, wavenumber: f64) -> f64 {
     HBAR / self.curvature(wavenumber)
   }
 
-  /// The same relation in mechanical variables, `E(p)`, which is the classical
-  /// energy of a particle carrying that momentum.
   pub fn energy(&self, momentum: f64) -> f64 {
     HBAR * self.frequency(momentum / HBAR)
   }
 
-  /// The speed the phase travels at, `omega / k`.
   pub fn phase_velocity(&self, wavenumber: f64) -> f64 {
     self.frequency(wavenumber) / wavenumber
   }

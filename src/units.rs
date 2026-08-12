@@ -1,9 +1,5 @@
-//! The unit system every number in the crate is expressed in: energies in
-//! electronvolts, lengths in nanometers, times in femtoseconds.
-//!
-//! A wavenumber is then in `1/nm`, an angular frequency in `1/fs`, a velocity
-//! in `nm/fs`, and a mass in `eV fs^2 / nm^2`, which is what `E = p^2 / 2 m`
-//! forces once the other three are fixed.
+//! The unit system every number in the crate is expressed in: `eV`, `nm`, `fs`,
+//! which leaves a mass in `eV fs^2 / nm^2`.
 
 /// `eV fs`
 pub const HBAR: f64 = 0.658_211_956_9;
