@@ -5,6 +5,7 @@ edition = "2024"
 
 [dependencies]
 num-complex = "0.4"
+rustfft = "6"
 
 # Dependencies are compiled optimized even in a debug build, this crate is not.
 [profile.dev.package."*"]

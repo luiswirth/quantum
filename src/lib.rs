@@ -1,5 +1,6 @@
 pub mod dispersion;
 pub mod grid;
+pub mod grid_state;
 pub mod plane_wave;
 pub mod superposition;
 pub mod units;

@@ -4,6 +4,8 @@ use std::marker::PhantomData;
 /// One side of the transform, whose dual is the other.
 pub trait Domain {
   type Dual: Domain<Dual = Self>;
+  /// The sign of `s` in `e^(i s k x)` when leaving this domain.
+  const SIGN: f64;
 }
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
@@ -13,19 +15,28 @@ pub struct Momentum;
 
 impl Domain for Position {
   type Dual = Momentum;
+  const SIGN: f64 = -1.0;
 }
 impl Domain for Momentum {
   type Dual = Position;
+  const SIGN: f64 = 1.0;
 }
 
 /// `N` samples of spacing `dif x`, periodic over `L = N dif x`, indexed
 /// signed so that the samples straddle the origin.
-#[derive(Clone, Copy, Debug, PartialEq)]
+#[derive(Debug, PartialEq)]
 pub struct Grid<D: Domain> {
   pub npoints: usize,
   pub spacing: f64,
   domain: PhantomData<D>,
 }
+
+impl<D: Domain> Clone for Grid<D> {
+  fn clone(&self) -> Self {
+    *self
+  }
+}
+impl<D: Domain> Copy for Grid<D> {}
 
 impl<D: Domain> Grid<D> {
   pub fn new(npoints: usize, spacing: f64) -> Self {
