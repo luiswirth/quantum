@@ -30,7 +30,9 @@ height = np.abs(psi).max()
 
 # A fixed axes rectangle, since an automatic layout would resize it whenever
 # the tick labels change width.
-figure = plt.figure(figsize=(6.5, 3.6), dpi=150)
+shape = (6.5, 3.6)
+resolution = 110
+figure = plt.figure(figsize=shape, dpi=resolution)
 axes = figure.add_axes((0.10, 0.14, 0.87, 0.78))
 (real,) = axes.plot([], [], color="#3b6ea5", linewidth=1.2, label=r"$\Re\,\psi$")
 (upper,) = axes.plot([], [], color="#111111", linewidth=1.6, label=r"$\pm|\psi|$")
@@ -40,6 +42,10 @@ axes.set_xlabel("position [nm]")
 axes.legend(loc="upper right")
 clock = axes.set_title("")
 
+# The canvas is rendered at the display's pixel ratio, which also scales the
+# figure's own dpi, so the asked for size is the one the frames are brought to.
+size = tuple(round(length * resolution) for length in shape)
+
 
 def draw(frame):
     axes.set_xlim(center[frame] - window, center[frame] + window)
@@ -48,19 +54,19 @@ def draw(frame):
     lower.set_data(position, -np.abs(psi[frame]))
     clock.set_text(f"t = {time[frame]:5.1f} fs")
     figure.canvas.draw()
-    return Image.frombuffer(
-        "RGBA", figure.canvas.get_width_height(), figure.canvas.buffer_rgba()
-    ).convert("RGB")
+    frame = Image.fromarray(np.asarray(figure.canvas.buffer_rgba())).convert("RGB")
+    return frame.resize(size, Image.LANCZOS)
 
 
-frames = [draw(index) for index in range(len(time))]
+frames = [draw(index) for index in range(0, len(time), 2)]
 frames[0].save(
     out / "packet.webp",
     save_all=True,
     append_images=frames[1:],
-    duration=40,
+    duration=50,
     loop=0,
-    lossless=True,
+    quality=90,
     method=6,
+    minimize_size=True,
 )
 frames[len(frames) // 2].save(out / "packet.png")
