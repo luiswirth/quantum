@@ -1,6 +1,8 @@
 use crate::{
   Complex,
   dispersion::Dispersion,
+  grid::{Grid, Momentum, Position},
+  grid_state::GridState,
   plane_wave::{Mode, PlaneWave},
 };
 use std::ops::{Add, Mul};
@@ -31,6 +33,36 @@ impl Superposition {
 
   pub fn at(&self, position: f64, time: f64) -> Complex {
     self.modes.iter().map(|mode| mode.at(position, time)).sum()
+  }
+
+  /// `psi(x_j, t)`, which aliases whatever the grid does not resolve.
+  pub fn sampled(&self, grid: Grid<Position>, time: f64) -> GridState<Position> {
+    GridState::new(
+      grid
+        .coordinates()
+        .map(|position| self.at(position, time))
+        .collect(),
+    )
+  }
+
+  /// One mode per grid wavenumber, the medium fixing each frequency.
+  ///
+  /// The transform is unitary while the sum is not, so the amplitudes lose the
+  /// `sqrt(N)` that sampling gave them.
+  pub fn from_spectrum(
+    spectrum: &GridState<Momentum>,
+    grid: Grid<Momentum>,
+    dispersion: Dispersion,
+  ) -> Self {
+    assert_eq!(grid.npoints, spectrum.npoints());
+    let scale = (grid.npoints as f64).sqrt().recip();
+    Self::in_medium(
+      dispersion,
+      grid
+        .coordinates()
+        .zip(&spectrum.values)
+        .map(|(wavenumber, amplitude)| (amplitude * scale, wavenumber)),
+    )
   }
 
   pub fn total_intensity(&self) -> f64 {

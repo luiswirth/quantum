@@ -1,7 +1,9 @@
 use quantum::Complex;
 use quantum::dispersion::Dispersion;
+use quantum::grid::{Grid, Position};
 use quantum::plane_wave::{Mode, PlaneWave};
 use quantum::superposition::Superposition;
+use std::f64::consts::TAU;
 
 fn positions() -> impl Iterator<Item = f64> {
   (-30..=30).map(|index| index as f64 * 0.1)
@@ -159,4 +161,51 @@ fn two_modes_straddle_their_center() {
   );
   assert!((superposition.expectation(|wave| wave.wavenumber) - 2.0).abs() < 1e-12);
   assert!((superposition.uncertainty(|wave| wave.wavenumber) - 1.0).abs() < 1e-12);
+}
+
+/// Sampling a superposition and transforming it recovers the amplitudes it
+/// was built from, as long as the grid resolves every mode.
+#[test]
+fn the_grid_recovers_the_modes_it_resolves() {
+  let grid: Grid<Position> = Grid::new(64, 0.25);
+  let dispersion = Dispersion::electron();
+  let wavenumbers: Vec<f64> = [3, -5, 12]
+    .iter()
+    .map(|n| *n as f64 * TAU / grid.length())
+    .collect();
+  let amplitudes = [
+    Complex::ONE,
+    Complex::new(0.0, -2.0),
+    Complex::new(0.5, 0.5),
+  ];
+  let superposition = Superposition::in_medium(
+    dispersion,
+    amplitudes.iter().copied().zip(wavenumbers.iter().copied()),
+  );
+
+  let spectrum = superposition.sampled(grid, 0.0).transformed();
+  let recovered = Superposition::from_spectrum(&spectrum, grid.dual(), dispersion);
+
+  for position in positions() {
+    assert!((recovered.at(position, 0.9) - superposition.at(position, 0.9)).norm() < 1e-10);
+  }
+}
+
+/// A mode beyond the Nyquist wavenumber is indistinguishable on the grid from
+/// one inside it.
+#[test]
+fn the_grid_aliases_what_it_cannot_resolve() {
+  let grid: Grid<Position> = Grid::new(64, 0.25);
+  let dispersion = Dispersion::electron();
+  let step = TAU / grid.length();
+  let inside = Superposition::in_medium(dispersion, [(Complex::ONE, 3.0 * step)]);
+  let outside = Superposition::in_medium(dispersion, [(Complex::ONE, 67.0 * step)]);
+  for (here, there) in inside
+    .sampled(grid, 0.0)
+    .values
+    .iter()
+    .zip(&outside.sampled(grid, 0.0).values)
+  {
+    assert!((here - there).norm() < 1e-10);
+  }
 }
