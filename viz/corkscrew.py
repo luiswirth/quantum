@@ -53,7 +53,7 @@ resolution = 150
 size = movie.pixels(shape, resolution)
 figure = plt.figure(figsize=shape, dpi=resolution)
 axes = figure.add_axes((-0.07, -0.06, 1.0, 1.08), projection="3d")
-axes.view_init(elev=16, azim=-62)
+axes.view_init(elev=15, azim=-60)
 # Orthographic, so an axis runs the same way wherever it is measured and the
 # helix is not tapered by perspective.
 axes.set_proj_type("ortho")
