@@ -28,7 +28,10 @@ center = (density * position).sum(1) / density.sum(1)
 window = 12.0
 height = np.abs(psi).max()
 
-figure, axes = plt.subplots(figsize=(6.5, 3.6), dpi=100, layout="constrained")
+# A fixed axes rectangle, since an automatic layout would resize it whenever
+# the tick labels change width.
+figure = plt.figure(figsize=(6.5, 3.6), dpi=100)
+axes = figure.add_axes((0.10, 0.14, 0.87, 0.78))
 (real,) = axes.plot([], [], color="#3b6ea5", linewidth=1.2, label=r"$\Re\,\psi$")
 (upper,) = axes.plot([], [], color="#111111", linewidth=1.6, label=r"$\pm|\psi|$")
 (lower,) = axes.plot([], [], color="#111111", linewidth=1.6)
