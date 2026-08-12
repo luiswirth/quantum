@@ -54,9 +54,14 @@ axes.view_init(elev=16, azim=-62)
 axes.set_box_aspect((3.0, 1.0, 1.0), zoom=1.1)
 axes.set_ylim(-1.15 * height, 1.15 * height)
 axes.set_zlim(-1.15 * height, 1.15 * height)
-axes.set_xlabel("position [nm]")
-axes.set_ylabel(r"$\Re\,\psi$")
-axes.set_zlabel(r"$\Im\,\psi$")
+# The complex plane is squeezed by the box aspect, so it carries three ticks
+# and no more.
+axes.set_yticks([-1.0, 0.0, 1.0])
+axes.set_zticks([-1.0, 0.0, 1.0])
+axes.tick_params(labelsize=8, pad=0)
+axes.set_xlabel("position [nm]", labelpad=8)
+axes.set_ylabel(r"$\Re\,\psi$", labelpad=2)
+axes.set_zlabel(r"$\Im\,\psi$", labelpad=2)
 
 (helix,) = axes.plot([], [], [], color="#1f4e79", linewidth=1.8)
 (shadow,) = axes.plot([], [], [], color="#111111", linewidth=1.0, alpha=0.55)
