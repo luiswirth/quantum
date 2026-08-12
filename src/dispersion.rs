@@ -46,6 +46,30 @@ impl Dispersion {
     }
   }
 
+  /// `d^2 omega / d k^2`, the rate neighbouring wavenumbers drift apart at,
+  /// and so the rate a packet spreads at.
+  pub fn curvature(&self, _wavenumber: f64) -> f64 {
+    match *self {
+      Self::FreeParticle { mass } => HBAR / mass,
+      Self::Light { .. } => 0.0,
+    }
+  }
+
+  /// The mass a packet responds with, `hbar / curvature`, which for the free
+  /// particle is the mass itself and in a band is what replaces it.
+  ///
+  /// A medium that does not bend the relation gives an infinite one: nothing
+  /// spreads there.
+  pub fn effective_mass(&self, wavenumber: f64) -> f64 {
+    HBAR / self.curvature(wavenumber)
+  }
+
+  /// The same relation in mechanical variables, `E(p)`, which is the classical
+  /// energy of a particle carrying that momentum.
+  pub fn energy(&self, momentum: f64) -> f64 {
+    HBAR * self.frequency(momentum / HBAR)
+  }
+
   /// The speed the phase travels at, `omega / k`.
   pub fn phase_velocity(&self, wavenumber: f64) -> f64 {
     self.frequency(wavenumber) / wavenumber

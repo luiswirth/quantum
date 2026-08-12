@@ -53,3 +53,34 @@ fn electron_energy_scale() {
   let scale = HBAR.powi(2) / (2.0 * ELECTRON_MASS);
   assert!((scale - 0.0380998).abs() < 1e-7);
 }
+
+#[test]
+fn curvature_is_the_bend_of_the_dispersion_relation() {
+  let step = 1e-3;
+  for dispersion in [Dispersion::electron(), Dispersion::vacuum_light()] {
+    for wavenumber in wavenumbers() {
+      let bend = (dispersion.frequency(wavenumber + step) - 2.0 * dispersion.frequency(wavenumber)
+        + dispersion.frequency(wavenumber - step))
+        / step.powi(2);
+      assert!((bend - dispersion.curvature(wavenumber)).abs() < 1e-6);
+    }
+  }
+}
+
+#[test]
+fn the_dispersion_relation_is_the_energy_momentum_relation() {
+  let dispersion = Dispersion::electron();
+  for wavenumber in wavenumbers() {
+    let wave = dispersion.plane_wave(wavenumber);
+    assert!((dispersion.energy(wave.momentum()) - wave.energy()).abs() < 1e-12);
+  }
+}
+
+#[test]
+fn the_free_particle_responds_with_its_own_mass() {
+  let dispersion = Dispersion::FreeParticle { mass: ELECTRON_MASS };
+  for wavenumber in wavenumbers() {
+    assert!((dispersion.effective_mass(wavenumber) - ELECTRON_MASS).abs() < 1e-12);
+    assert!(Dispersion::vacuum_light().effective_mass(wavenumber).is_infinite());
+  }
+}
