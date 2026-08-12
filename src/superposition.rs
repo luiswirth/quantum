@@ -34,10 +34,9 @@ impl Superposition {
       mode.evolve(time);
     }
   }
-  pub fn evolved(&self, time: f64) -> Self {
-    let mut superposition = self.clone();
-    superposition.evolve(time);
-    superposition
+  pub fn evolved(mut self, time: f64) -> Self {
+    self.evolve(time);
+    self
   }
 }
 

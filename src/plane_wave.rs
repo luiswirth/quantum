@@ -73,10 +73,9 @@ impl Mode {
   pub fn evolve(&mut self, time: f64) {
     self.amplitude *= self.wave.phase_factor(time);
   }
-  pub fn evolved(&self, time: f64) -> Self {
-    let mut mode = *self;
-    mode.evolve(time);
-    mode
+  pub fn evolved(mut self, time: f64) -> Self {
+    self.evolve(time);
+    self
   }
 }
 

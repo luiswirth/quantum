@@ -71,7 +71,7 @@ fn evolving_the_amplitudes_is_waiting() {
     [(Complex::ONE, 1.5), (Complex::I, -0.5), (Complex::ONE, 3.0)],
   );
   for time in [0.0, 0.2, 1.7] {
-    let waited = superposition.evolved(time);
+    let waited = superposition.clone().evolved(time);
     for position in positions() {
       assert!((waited.at(position, 0.0) - superposition.at(position, time)).norm() < 1e-12);
     }
@@ -85,7 +85,7 @@ fn evolution_composes() {
     Dispersion::electron(),
     [(Complex::ONE, 1.5), (Complex::I, -0.5)],
   );
-  let stepwise = superposition.evolved(0.3).evolved(0.9);
+  let stepwise = superposition.clone().evolved(0.3).evolved(0.9);
   let direct = superposition.evolved(1.2);
   for position in positions() {
     assert!((stepwise.at(position, 0.0) - direct.at(position, 0.0)).norm() < 1e-12);
