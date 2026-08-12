@@ -4,8 +4,7 @@ Elementary quantum mechanics encoded in Rust, written to be read: each type is
 an object of the theory, and each test is a statement about it rather than a
 regression guard. Public at <https://github.com/luiswirth/quantum>.
 
-The toolchain comes from the flake, so `nix develop --command cargo test` runs
-from anywhere.
+The toolchain comes from the flake, which also installs the pre-commit hook.
 
 ## Layout
 
