@@ -61,3 +61,54 @@ fn a_beat_travels_at_the_group_velocity() {
     assert!((superposition.at(crest, time).norm() - 2.0).abs() < 1e-9);
   }
 }
+
+/// Evolution is a rotation of the amplitudes, and nothing else.
+#[test]
+fn evolving_the_amplitudes_is_waiting() {
+  let superposition = Superposition::in_medium(
+    Dispersion::electron(),
+    [(Complex::ONE, 1.5), (Complex::I, -0.5), (Complex::ONE, 3.0)],
+  );
+  for time in [0.0, 0.2, 1.7] {
+    let waited = superposition.evolved(time);
+    for position in positions() {
+      assert!((waited.at(position, 0.0) - superposition.at(position, time)).norm() < 1e-12);
+    }
+  }
+}
+
+/// Waiting twice is waiting once for the sum of the two waits.
+#[test]
+fn evolution_composes() {
+  let superposition =
+    Superposition::in_medium(Dispersion::electron(), [(Complex::ONE, 1.5), (Complex::I, -0.5)]);
+  let stepwise = superposition.evolved(0.3).evolved(0.9);
+  let direct = superposition.evolved(1.2);
+  for position in positions() {
+    assert!((stepwise.at(position, 0.0) - direct.at(position, 0.0)).norm() < 1e-12);
+  }
+}
+
+#[test]
+fn the_superposition_is_linear() {
+  let dispersion = Dispersion::electron();
+  let left = Superposition::in_medium(dispersion, [(Complex::ONE, 1.0)]);
+  let right = Superposition::in_medium(dispersion, [(Complex::I, 2.0)]);
+  let factor = Complex::new(0.3, -1.4);
+  let combined = left.clone() * factor + right.clone();
+  for position in positions() {
+    let expected = factor * left.at(position, 0.4) + right.at(position, 0.4);
+    assert!((combined.at(position, 0.4) - expected).norm() < 1e-12);
+  }
+}
+
+/// A wave scaled is a mode, and two modes added are a superposition.
+#[test]
+fn the_levels_build_on_each_other() {
+  let dispersion = Dispersion::electron();
+  let built = dispersion.plane_wave(1.0) * Complex::ONE + dispersion.plane_wave(-1.0) * Complex::ONE;
+  let direct = Superposition::in_medium(dispersion, [(Complex::ONE, 1.0), (Complex::ONE, -1.0)]);
+  for position in positions() {
+    assert!((built.at(position, 0.6) - direct.at(position, 0.6)).norm() < 1e-12);
+  }
+}

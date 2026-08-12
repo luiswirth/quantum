@@ -24,6 +24,11 @@ impl PlaneWave {
     Complex::from_polar(1.0, self.phase(position, time))
   }
 
+  /// `e^(-i omega t)`, the factor a wait of `time` turns the wave by.
+  pub fn phase_factor(&self, time: f64) -> Complex {
+    Complex::from_polar(1.0, -self.frequency * time)
+  }
+
   /// `p = planck k`
   pub fn momentum(&self) -> f64 {
     HBAR * self.wavenumber
