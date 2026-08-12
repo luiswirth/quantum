@@ -51,9 +51,9 @@ shape = (7.0, 4.2)
 resolution = 150
 size = movie.pixels(shape, resolution)
 figure = plt.figure(figsize=shape, dpi=resolution)
-axes = figure.add_axes((0.0, -0.04, 1.0, 1.0), projection="3d")
+axes = figure.add_axes((-0.07, -0.06, 1.0, 1.08), projection="3d")
 axes.view_init(elev=16, azim=-62)
-axes.set_box_aspect((3.0, 1.0, 1.0), zoom=1.1)
+axes.set_box_aspect((3.0, 1.0, 1.0), zoom=1.3)
 axes.set_ylim(-1.15 * height, 1.15 * height)
 axes.set_zlim(-1.15 * height, 1.15 * height)
 # The complex plane is squeezed by the box aspect, so it carries three ticks
@@ -62,8 +62,8 @@ axes.set_yticks([-1.0, 0.0, 1.0])
 axes.set_zticks([-1.0, 0.0, 1.0])
 axes.tick_params(labelsize=8, pad=0)
 axes.set_xlabel("position [nm]", labelpad=8)
-axes.set_ylabel(r"$\Re\,\psi$", labelpad=2)
-axes.set_zlabel(r"$\Im\,\psi$", labelpad=2)
+axes.set_ylabel(r"$\Re\,\psi$", labelpad=-6)
+axes.set_zlabel(r"$\Im\,\psi$", labelpad=-6)
 
 # The hue is the angle the helix already turns through, so the two pictures of
 # the phase can be read against each other.
