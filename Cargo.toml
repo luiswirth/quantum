@@ -1,0 +1,11 @@
+[package]
+name = "quantum"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+num-complex = "0.4"
+
+# Dependencies are compiled optimized even in a debug build, this crate is not.
+[profile.dev.package."*"]
+opt-level = 3
