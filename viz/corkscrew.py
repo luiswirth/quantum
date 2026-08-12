@@ -23,6 +23,23 @@ order = position.argsort()
 position = position[order]
 psi = psi[:, order]
 
+
+def refine(values, factor):
+    """The same band limited function on a finer grid, by padding its
+    spectrum, which invents nothing the samples did not already fix."""
+    spectrum = np.fft.fft(values, axis=-1)
+    half = values.shape[-1] // 2
+    padded = np.zeros(values.shape[:-1] + (values.shape[-1] * factor,), complex)
+    padded[..., :half] = spectrum[..., :half]
+    padded[..., -half:] = spectrum[..., -half:]
+    return np.fft.ifft(padded, axis=-1) * factor
+
+
+refinement = 8
+psi = refine(psi, refinement)
+spacing = position[1] - position[0]
+position = position[0] + spacing / refinement * np.arange(psi.shape[-1])
+
 density = np.abs(psi) ** 2
 center = (density * position).sum(1) / density.sum(1)
 window = 8.0
