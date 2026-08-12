@@ -1,23 +1,16 @@
 use crate::{
   Complex,
+  combination::Combination,
   dispersion::Dispersion,
   grid::{Grid, Momentum, Position},
   grid_state::GridState,
   plane_wave::{Mode, PlaneWave},
 };
-use std::ops::{Add, Mul};
 
-/// `psi(x, t) = sum_n c_n e^(i (k_n x - omega_n t))`
-#[derive(Clone, Debug)]
-pub struct Superposition {
-  pub modes: Vec<Mode>,
-}
+/// `psi(t, x) = sum_n c_n e^(i (k_n x - omega_n t))`
+pub type Superposition = Combination<PlaneWave>;
 
 impl Superposition {
-  pub fn new(modes: Vec<Mode>) -> Self {
-    Self { modes }
-  }
-
   /// The modes a medium admits, whose frequencies it fixes through `omega(k)`.
   pub fn in_medium(
     dispersion: Dispersion,
@@ -32,10 +25,10 @@ impl Superposition {
   }
 
   pub fn at(&self, time: f64, position: f64) -> Complex {
-    self.modes.iter().map(|mode| mode.at(time, position)).sum()
+    self.terms.iter().map(|mode| mode.at(time, position)).sum()
   }
 
-  /// `psi(x_j, t)`, which aliases whatever the grid does not resolve.
+  /// `psi(t, x_j)`, which aliases whatever the grid does not resolve.
   pub fn sampled(&self, time: f64, grid: Grid<Position>) -> GridState<Position> {
     GridState::new(
       grid
@@ -65,66 +58,13 @@ impl Superposition {
     )
   }
 
-  pub fn total_intensity(&self) -> f64 {
-    self.modes.iter().map(Mode::intensity).sum()
-  }
-
-  /// `expect(f) = (sum_n abs(c_n)^2 f(k_n)) / (sum_n abs(c_n)^2)`, for an
-  /// observable the modes diagonalize.
-  pub fn expectation(&self, observable: impl Fn(&PlaneWave) -> f64) -> f64 {
-    let weighted: f64 = self
-      .modes
-      .iter()
-      .map(|mode| mode.intensity() * observable(&mode.wave))
-      .sum();
-    weighted / self.total_intensity()
-  }
-
-  /// `variance(f) = expect(f^2) - expect(f)^2`
-  pub fn variance(&self, observable: impl Fn(&PlaneWave) -> f64) -> f64 {
-    self.expectation(|wave| observable(wave).powi(2)) - self.expectation(&observable).powi(2)
-  }
-
-  /// `Delta f = sqrt(variance(f))`
-  pub fn uncertainty(&self, observable: impl Fn(&PlaneWave) -> f64) -> f64 {
-    self.variance(observable).sqrt()
-  }
-
   pub fn evolve(&mut self, time: f64) {
-    for mode in &mut self.modes {
+    for mode in &mut self.terms {
       mode.evolve(time);
     }
   }
   pub fn evolved(mut self, time: f64) -> Self {
     self.evolve(time);
-    self
-  }
-}
-
-impl From<Mode> for Superposition {
-  fn from(mode: Mode) -> Self {
-    Superposition::new(vec![mode])
-  }
-}
-
-impl Add for Mode {
-  type Output = Superposition;
-  fn add(self, other: Mode) -> Superposition {
-    Superposition::new(vec![self, other])
-  }
-}
-
-impl Mul<Complex> for Superposition {
-  type Output = Superposition;
-  fn mul(self, factor: Complex) -> Superposition {
-    Superposition::new(self.modes.into_iter().map(|mode| mode * factor).collect())
-  }
-}
-
-impl Add for Superposition {
-  type Output = Superposition;
-  fn add(mut self, other: Superposition) -> Superposition {
-    self.modes.extend(other.modes);
     self
   }
 }

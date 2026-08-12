@@ -1,3 +1,4 @@
+pub mod combination;
 pub mod dispersion;
 pub mod grid;
 pub mod grid_state;

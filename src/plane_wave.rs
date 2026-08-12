@@ -1,4 +1,4 @@
-use crate::{Complex, units::HBAR};
+use crate::{Complex, combination::Weighted, units::HBAR};
 use std::f64::consts::TAU;
 use std::ops::Mul;
 
@@ -77,28 +77,15 @@ impl PlaneWave {
 }
 
 /// `c e^(i (k x - omega t))`
-#[derive(Clone, Copy, Debug)]
-pub struct Mode {
-  pub amplitude: Complex,
-  pub wave: PlaneWave,
-}
+pub type Mode = Weighted<PlaneWave>;
 
 impl Mode {
-  pub fn new(amplitude: Complex, wave: PlaneWave) -> Self {
-    Self { amplitude, wave }
-  }
-
   pub fn at(&self, time: f64, position: f64) -> Complex {
-    self.amplitude * self.wave.at(time, position)
-  }
-
-  /// `abs(c)^2`
-  pub fn intensity(&self) -> f64 {
-    self.amplitude.norm_sqr()
+    self.amplitude * self.element.at(time, position)
   }
 
   pub fn evolve(&mut self, time: f64) {
-    self.amplitude *= self.wave.phase_factor(time);
+    self.amplitude *= self.element.phase_factor(time);
   }
   pub fn evolved(mut self, time: f64) -> Self {
     self.evolve(time);
@@ -106,22 +93,16 @@ impl Mode {
   }
 }
 
-impl From<PlaneWave> for Mode {
-  fn from(wave: PlaneWave) -> Self {
-    Mode::new(Complex::ONE, wave)
+impl Mul<Complex> for HarmonicWave {
+  type Output = Weighted<HarmonicWave>;
+  fn mul(self, amplitude: Complex) -> Weighted<HarmonicWave> {
+    Weighted::new(amplitude, self)
   }
 }
 
 impl Mul<Complex> for PlaneWave {
   type Output = Mode;
   fn mul(self, amplitude: Complex) -> Mode {
-    Mode::new(amplitude, self)
-  }
-}
-
-impl Mul<Complex> for Mode {
-  type Output = Mode;
-  fn mul(self, factor: Complex) -> Mode {
-    Mode::new(self.amplitude * factor, self.wave)
+    Weighted::new(amplitude, self)
   }
 }
