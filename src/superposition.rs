@@ -31,16 +31,16 @@ impl Superposition {
     )
   }
 
-  pub fn at(&self, position: f64, time: f64) -> Complex {
-    self.modes.iter().map(|mode| mode.at(position, time)).sum()
+  pub fn at(&self, time: f64, position: f64) -> Complex {
+    self.modes.iter().map(|mode| mode.at(time, position)).sum()
   }
 
   /// `psi(x_j, t)`, which aliases whatever the grid does not resolve.
-  pub fn sampled(&self, grid: Grid<Position>, time: f64) -> GridState<Position> {
+  pub fn sampled(&self, time: f64, grid: Grid<Position>) -> GridState<Position> {
     GridState::new(
       grid
         .coordinates()
-        .map(|position| self.at(position, time))
+        .map(|position| self.at(time, position))
         .collect(),
     )
   }

@@ -63,6 +63,6 @@ impl Dispersion {
   }
 
   pub fn plane_wave(&self, wavenumber: f64) -> PlaneWave {
-    PlaneWave::new(wavenumber, self.frequency(wavenumber))
+    PlaneWave::new(self.frequency(wavenumber), wavenumber)
   }
 }

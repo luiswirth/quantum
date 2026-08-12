@@ -13,7 +13,7 @@ fn positions() -> impl Iterator<Item = f64> {
 fn an_empty_superposition_vanishes() {
   let superposition = Superposition::new(Vec::new());
   for position in positions() {
-    assert_eq!(superposition.at(position, 0.7), Complex::ZERO);
+    assert_eq!(superposition.at(0.7, position), Complex::ZERO);
   }
 }
 
@@ -22,7 +22,7 @@ fn a_single_mode_is_its_own_wave() {
   let wave = Dispersion::electron().plane_wave(2.0);
   let superposition = Superposition::new(vec![Mode::new(Complex::ONE, wave)]);
   for position in positions() {
-    assert!((superposition.at(position, 0.3) - wave.at(position, 0.3)).norm() < 1e-12);
+    assert!((superposition.at(0.3, position) - wave.at(0.3, position)).norm() < 1e-12);
   }
 }
 
@@ -39,7 +39,7 @@ fn counter_propagating_modes_stand_still() {
   for position in positions() {
     let envelope = 2.0 * (wavenumber * position).cos();
     for time in [0.0, 0.4, 1.3] {
-      assert!((superposition.at(position, time).norm() - envelope.abs()).abs() < 1e-12);
+      assert!((superposition.at(time, position).norm() - envelope.abs()).abs() < 1e-12);
     }
   }
 }
@@ -61,7 +61,7 @@ fn a_beat_travels_at_the_group_velocity() {
   let velocity = dispersion.group_velocity(center);
   for time in [0.0, 0.5, 2.0, 5.0] {
     let crest = velocity * time;
-    assert!((superposition.at(crest, time).norm() - 2.0).abs() < 1e-9);
+    assert!((superposition.at(time, crest).norm() - 2.0).abs() < 1e-9);
   }
 }
 
@@ -75,7 +75,7 @@ fn evolving_the_amplitudes_is_waiting() {
   for time in [0.0, 0.2, 1.7] {
     let waited = superposition.clone().evolved(time);
     for position in positions() {
-      assert!((waited.at(position, 0.0) - superposition.at(position, time)).norm() < 1e-12);
+      assert!((waited.at(0.0, position) - superposition.at(time, position)).norm() < 1e-12);
     }
   }
 }
@@ -90,7 +90,7 @@ fn evolution_composes() {
   let stepwise = superposition.clone().evolved(0.3).evolved(0.9);
   let direct = superposition.evolved(1.2);
   for position in positions() {
-    assert!((stepwise.at(position, 0.0) - direct.at(position, 0.0)).norm() < 1e-12);
+    assert!((stepwise.at(0.0, position) - direct.at(0.0, position)).norm() < 1e-12);
   }
 }
 
@@ -102,8 +102,8 @@ fn the_superposition_is_linear() {
   let factor = Complex::new(0.3, -1.4);
   let combined = left.clone() * factor + right.clone();
   for position in positions() {
-    let expected = factor * left.at(position, 0.4) + right.at(position, 0.4);
-    assert!((combined.at(position, 0.4) - expected).norm() < 1e-12);
+    let expected = factor * left.at(0.4, position) + right.at(0.4, position);
+    assert!((combined.at(0.4, position) - expected).norm() < 1e-12);
   }
 }
 
@@ -115,7 +115,7 @@ fn the_levels_build_on_each_other() {
     dispersion.plane_wave(1.0) * Complex::ONE + dispersion.plane_wave(-1.0) * Complex::ONE;
   let direct = Superposition::in_medium(dispersion, [(Complex::ONE, 1.0), (Complex::ONE, -1.0)]);
   for position in positions() {
-    assert!((built.at(position, 0.6) - direct.at(position, 0.6)).norm() < 1e-12);
+    assert!((built.at(0.6, position) - direct.at(0.6, position)).norm() < 1e-12);
   }
 }
 
@@ -183,11 +183,11 @@ fn the_grid_recovers_the_modes_it_resolves() {
     amplitudes.iter().copied().zip(wavenumbers.iter().copied()),
   );
 
-  let spectrum = superposition.sampled(grid, 0.0).transformed();
+  let spectrum = superposition.sampled(0.0, grid).transformed();
   let recovered = Superposition::from_spectrum(&spectrum, grid.dual(), dispersion);
 
   for position in positions() {
-    assert!((recovered.at(position, 0.9) - superposition.at(position, 0.9)).norm() < 1e-10);
+    assert!((recovered.at(0.9, position) - superposition.at(0.9, position)).norm() < 1e-10);
   }
 }
 
@@ -201,10 +201,10 @@ fn the_grid_aliases_what_it_cannot_resolve() {
   let inside = Superposition::in_medium(dispersion, [(Complex::ONE, 3.0 * step)]);
   let outside = Superposition::in_medium(dispersion, [(Complex::ONE, 67.0 * step)]);
   for (here, there) in inside
-    .sampled(grid, 0.0)
+    .sampled(0.0, grid)
     .values
     .iter()
-    .zip(&outside.sampled(grid, 0.0).values)
+    .zip(&outside.sampled(0.0, grid).values)
   {
     assert!((here - there).norm() < 1e-10);
   }

@@ -5,24 +5,24 @@ use std::ops::Mul;
 /// `psi(x, t) = e^(i (k x - omega t))`, whose sign convention holds crate wide.
 #[derive(Clone, Copy, Debug)]
 pub struct PlaneWave {
-  pub wavenumber: f64,
   pub frequency: f64,
+  pub wavenumber: f64,
 }
 
 impl PlaneWave {
-  pub fn new(wavenumber: f64, frequency: f64) -> Self {
+  pub fn new(frequency: f64, wavenumber: f64) -> Self {
     Self {
-      wavenumber,
       frequency,
+      wavenumber,
     }
   }
 
   /// `k x - omega t`
-  pub fn phase(&self, position: f64, time: f64) -> f64 {
+  pub fn phase(&self, time: f64, position: f64) -> f64 {
     self.wavenumber * position - self.frequency * time
   }
-  pub fn at(&self, position: f64, time: f64) -> Complex {
-    Complex::from_polar(1.0, self.phase(position, time))
+  pub fn at(&self, time: f64, position: f64) -> Complex {
+    Complex::from_polar(1.0, self.phase(time, position))
   }
 
   /// `e^(-i omega t)`, the factor a wait of `time` turns the wave by.
@@ -66,8 +66,8 @@ impl Mode {
     Self { amplitude, wave }
   }
 
-  pub fn at(&self, position: f64, time: f64) -> Complex {
-    self.amplitude * self.wave.at(position, time)
+  pub fn at(&self, time: f64, position: f64) -> Complex {
+    self.amplitude * self.wave.at(time, position)
   }
 
   /// `abs(c)^2`
