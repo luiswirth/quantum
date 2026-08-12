@@ -1,5 +1,6 @@
 use crate::{Complex, units::HBAR};
 use std::f64::consts::TAU;
+use std::ops::Mul;
 
 /// `psi(x, t) = e^(i (k x - omega t))`, whose sign convention holds crate wide.
 #[derive(Clone, Copy, Debug)]
@@ -50,5 +51,51 @@ impl PlaneWave {
   /// `v_p = omega / k`
   pub fn phase_velocity(&self) -> f64 {
     self.frequency / self.wavenumber
+  }
+}
+
+/// `c e^(i (k x - omega t))`
+#[derive(Clone, Copy, Debug)]
+pub struct Mode {
+  pub amplitude: Complex,
+  pub wave: PlaneWave,
+}
+
+impl Mode {
+  pub fn new(amplitude: Complex, wave: PlaneWave) -> Self {
+    Self { amplitude, wave }
+  }
+
+  pub fn at(&self, position: f64, time: f64) -> Complex {
+    self.amplitude * self.wave.at(position, time)
+  }
+
+  pub fn evolve(&mut self, time: f64) {
+    self.amplitude *= self.wave.phase_factor(time);
+  }
+  pub fn evolved(&self, time: f64) -> Self {
+    let mut mode = *self;
+    mode.evolve(time);
+    mode
+  }
+}
+
+impl From<PlaneWave> for Mode {
+  fn from(wave: PlaneWave) -> Self {
+    Mode::new(Complex::ONE, wave)
+  }
+}
+
+impl Mul<Complex> for PlaneWave {
+  type Output = Mode;
+  fn mul(self, amplitude: Complex) -> Mode {
+    Mode::new(amplitude, self)
+  }
+}
+
+impl Mul<Complex> for Mode {
+  type Output = Mode;
+  fn mul(self, factor: Complex) -> Mode {
+    Mode::new(self.amplitude * factor, self.wave)
   }
 }

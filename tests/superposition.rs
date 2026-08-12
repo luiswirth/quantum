@@ -1,5 +1,6 @@
 use quantum::dispersion::Dispersion;
-use quantum::superposition::{Mode, Superposition};
+use quantum::plane_wave::Mode;
+use quantum::superposition::Superposition;
 use quantum::Complex;
 
 fn positions() -> impl Iterator<Item = f64> {
