@@ -1,7 +1,7 @@
 use quantum::Complex;
-use quantum::dirac::{Comb, Dirac, Impulse};
+use quantum::dirac::{Comb, Dirac, Event, Impulse};
 use quantum::grid::{Grid, Position};
-use quantum::plane_wave::HarmonicWave;
+use quantum::plane_wave::{HarmonicWave, PlaneWave};
 use std::f64::consts::TAU;
 
 fn grid() -> Grid<Position> {
@@ -55,4 +55,15 @@ fn the_comb_gathers_onto_the_grid() {
   assert_eq!(state.values[0], Complex::ONE);
   assert_eq!(state.values[2], Complex::I);
   assert_eq!(state.total_intensity(), 2.0);
+}
+
+/// An event and a plane wave are each other's transform, so pairing one with
+/// the other gives the same number read either way.
+#[test]
+fn the_event_and_the_plane_wave_pair_to_the_same_number() {
+  let event = Event::new(0.6, Dirac::new(-1.4));
+  let wave = PlaneWave::new(2.2, HarmonicWave::new(1.7));
+  let taken = event.apply(|time, position| wave.at(time, position));
+  let transformed = event.transform_at(wave.frequency, wave.harmonic.wavenumber);
+  assert!((taken - transformed.conj()).norm() < 1e-12);
 }

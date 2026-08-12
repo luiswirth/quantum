@@ -29,6 +29,29 @@ impl Dirac {
   }
 }
 
+/// `delta(t - t_0) delta(x - x_0)`, a point of spacetime.
+#[derive(Clone, Copy, Debug)]
+pub struct Event {
+  pub time: f64,
+  pub dirac: Dirac,
+}
+
+impl Event {
+  pub fn new(time: f64, dirac: Dirac) -> Self {
+    Self { time, dirac }
+  }
+
+  /// `f(t_0, x_0)`
+  pub fn apply(&self, test: impl Fn(f64, f64) -> Complex) -> Complex {
+    test(self.time, self.dirac.position)
+  }
+
+  /// `e^(-i (k x_0 - omega t_0))`
+  pub fn transform_at(&self, frequency: f64, wavenumber: f64) -> Complex {
+    self.dirac.transform_at(wavenumber) * Complex::from_polar(1.0, frequency * self.time)
+  }
+}
+
 /// `c delta(x - x_0)`
 pub type Impulse = Weighted<Dirac>;
 
@@ -82,9 +105,29 @@ impl Comb {
   }
 }
 
+/// `c delta(t - t_0) delta(x - x_0)`
+pub type Source = Weighted<Event>;
+
+impl Source {
+  pub fn apply(&self, test: impl Fn(f64, f64) -> Complex) -> Complex {
+    self.amplitude * self.element.apply(test)
+  }
+
+  pub fn transform_at(&self, frequency: f64, wavenumber: f64) -> Complex {
+    self.amplitude * self.element.transform_at(frequency, wavenumber)
+  }
+}
+
 impl Mul<Complex> for Dirac {
   type Output = Impulse;
   fn mul(self, amplitude: Complex) -> Impulse {
+    Weighted::new(amplitude, self)
+  }
+}
+
+impl Mul<Complex> for Event {
+  type Output = Source;
+  fn mul(self, amplitude: Complex) -> Source {
     Weighted::new(amplitude, self)
   }
 }
