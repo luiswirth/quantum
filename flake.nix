@@ -46,6 +46,13 @@
       default = pkgs.mkShell {
         inherit (preCommit system) shellHook;
 
+        # uv resolves packages, never interpreters: the one in the shell is the
+        # one it runs, so nothing python comes from outside the flake.
+        env = {
+          UV_PYTHON_DOWNLOADS = "never";
+          UV_PYTHON_PREFERENCE = "only-system";
+        };
+
         packages = with pkgs; [
           (rust-bin.fromRustupToolchainFile ./rust-toolchain.toml)
           bacon
