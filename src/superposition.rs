@@ -37,8 +37,8 @@ impl Superposition {
     self.modes.iter().map(Mode::intensity).sum()
   }
 
-  /// `angle.l f angle.r = (sum_n abs(c_n)^2 f(k_n)) / (sum_n abs(c_n)^2)`, for
-  /// an observable the modes diagonalize.
+  /// `expect(f) = (sum_n abs(c_n)^2 f(k_n)) / (sum_n abs(c_n)^2)`, for an
+  /// observable the modes diagonalize.
   pub fn expectation(&self, observable: impl Fn(&PlaneWave) -> f64) -> f64 {
     let weighted: f64 = self
       .modes
@@ -48,12 +48,12 @@ impl Superposition {
     weighted / self.total_intensity()
   }
 
-  /// `angle.l f^2 angle.r - angle.l f angle.r^2`
+  /// `variance(f) = expect(f^2) - expect(f)^2`
   pub fn variance(&self, observable: impl Fn(&PlaneWave) -> f64) -> f64 {
     self.expectation(|wave| observable(wave).powi(2)) - self.expectation(&observable).powi(2)
   }
 
-  /// `Delta f = sqrt(angle.l f^2 angle.r - angle.l f angle.r^2)`
+  /// `Delta f = sqrt(variance(f))`
   pub fn uncertainty(&self, observable: impl Fn(&PlaneWave) -> f64) -> f64 {
     self.variance(observable).sqrt()
   }
