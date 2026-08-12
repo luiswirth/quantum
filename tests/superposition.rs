@@ -1,7 +1,7 @@
+use quantum::Complex;
 use quantum::dispersion::Dispersion;
 use quantum::plane_wave::Mode;
 use quantum::superposition::Superposition;
-use quantum::Complex;
 
 fn positions() -> impl Iterator<Item = f64> {
   (-30..=30).map(|index| index as f64 * 0.1)
@@ -81,8 +81,10 @@ fn evolving_the_amplitudes_is_waiting() {
 /// Waiting twice is waiting once for the sum of the two waits.
 #[test]
 fn evolution_composes() {
-  let superposition =
-    Superposition::in_medium(Dispersion::electron(), [(Complex::ONE, 1.5), (Complex::I, -0.5)]);
+  let superposition = Superposition::in_medium(
+    Dispersion::electron(),
+    [(Complex::ONE, 1.5), (Complex::I, -0.5)],
+  );
   let stepwise = superposition.evolved(0.3).evolved(0.9);
   let direct = superposition.evolved(1.2);
   for position in positions() {
@@ -107,7 +109,8 @@ fn the_superposition_is_linear() {
 #[test]
 fn the_levels_build_on_each_other() {
   let dispersion = Dispersion::electron();
-  let built = dispersion.plane_wave(1.0) * Complex::ONE + dispersion.plane_wave(-1.0) * Complex::ONE;
+  let built =
+    dispersion.plane_wave(1.0) * Complex::ONE + dispersion.plane_wave(-1.0) * Complex::ONE;
   let direct = Superposition::in_medium(dispersion, [(Complex::ONE, 1.0), (Complex::ONE, -1.0)]);
   for position in positions() {
     assert!((built.at(position, 0.6) - direct.at(position, 0.6)).norm() < 1e-12);

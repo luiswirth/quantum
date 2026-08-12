@@ -2,7 +2,9 @@ use quantum::dispersion::Dispersion;
 use quantum::units::{ELECTRON_MASS, HBAR};
 
 fn wavenumbers() -> impl Iterator<Item = f64> {
-  (-20..=20).filter(|index| *index != 0).map(|index| index as f64 * 0.5)
+  (-20..=20)
+    .filter(|index| *index != 0)
+    .map(|index| index as f64 * 0.5)
 }
 
 #[test]
@@ -24,9 +26,7 @@ fn light_carries_phase_and_packet_together_and_the_electron_does_not() {
   let light = Dispersion::vacuum_light();
   let electron = Dispersion::electron();
   for wavenumber in wavenumbers() {
-    assert!(
-      (light.phase_velocity(wavenumber) - light.group_velocity(wavenumber)).abs() < 1e-12
-    );
+    assert!((light.phase_velocity(wavenumber) - light.group_velocity(wavenumber)).abs() < 1e-12);
     assert!(
       (2.0 * electron.phase_velocity(wavenumber) - electron.group_velocity(wavenumber)).abs()
         < 1e-12
@@ -78,9 +78,15 @@ fn the_dispersion_relation_is_the_energy_momentum_relation() {
 
 #[test]
 fn the_free_particle_responds_with_its_own_mass() {
-  let dispersion = Dispersion::FreeParticle { mass: ELECTRON_MASS };
+  let dispersion = Dispersion::FreeParticle {
+    mass: ELECTRON_MASS,
+  };
   for wavenumber in wavenumbers() {
     assert!((dispersion.effective_mass(wavenumber) - ELECTRON_MASS).abs() < 1e-12);
-    assert!(Dispersion::vacuum_light().effective_mass(wavenumber).is_infinite());
+    assert!(
+      Dispersion::vacuum_light()
+        .effective_mass(wavenumber)
+        .is_infinite()
+    );
   }
 }
