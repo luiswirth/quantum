@@ -1,4 +1,4 @@
-use crate::Complex;
+use crate::{Complex, units::HBAR};
 use std::f64::consts::TAU;
 
 /// The wave `exp(i (k x - omega t))`, of unit modulus everywhere.
@@ -24,6 +24,15 @@ impl PlaneWave {
   }
   pub fn at(&self, position: f64, time: f64) -> Complex {
     Complex::from_polar(1.0, self.phase(position, time))
+  }
+
+  /// de Broglie.
+  pub fn momentum(&self) -> f64 {
+    HBAR * self.wavenumber
+  }
+  /// Planck-Einstein.
+  pub fn energy(&self) -> f64 {
+    HBAR * self.frequency
   }
 
   pub fn wavelength(&self) -> f64 {
