@@ -13,6 +13,8 @@ import subprocess
 
 import matplotlib.pyplot as plt
 import numpy as np
+from matplotlib.colors import hsv_to_rgb
+from matplotlib.patches import Polygon
 from PIL import Image
 
 out = pathlib.Path(__file__).resolve().parent.parent / "out"
@@ -37,9 +39,25 @@ resolution = 150
 size = tuple(2 * round(length * resolution / 2) for length in shape)
 figure = plt.figure(figsize=shape, dpi=resolution)
 axes = figure.add_axes((0.10, 0.14, 0.87, 0.78))
-(real,) = axes.plot([], [], color="#3b6ea5", linewidth=1.2, label=r"$\Re\,\psi$")
-(upper,) = axes.plot([], [], color="#111111", linewidth=1.6, label=r"$\pm|\psi|$")
-(lower,) = axes.plot([], [], color="#111111", linewidth=1.6)
+# The phase paints the body of the packet, and the modulus bounds it.
+hue = axes.imshow(
+    np.zeros((1, len(position), 3)),
+    origin="lower",
+    aspect="auto",
+    extent=(position[0], position[-1], -1.15 * height, 1.15 * height),
+    interpolation="nearest",
+    zorder=0,
+)
+envelope = Polygon(np.zeros((2, 2)), closed=True, visible=False)
+axes.add_patch(envelope)
+hue.set_clip_path(envelope)
+(real,) = axes.plot(
+    [], [], color="black", linewidth=2.0, zorder=3, label=r"$\Re\,\psi$"
+)
+(upper,) = axes.plot(
+    [], [], color="#111111", linewidth=1.6, zorder=3, label=r"$\pm|\psi|$"
+)
+(lower,) = axes.plot([], [], color="#111111", linewidth=1.6, zorder=3)
 axes.set_ylim(-1.15 * height, 1.15 * height)
 axes.set_xlabel("position [nm]")
 axes.legend(loc="upper right")
@@ -58,6 +76,22 @@ for frame in range(len(time)):
     real.set_data(position, psi[frame].real)
     upper.set_data(position, np.abs(psi[frame]))
     lower.set_data(position, -np.abs(psi[frame]))
+    angle = (np.angle(psi[frame]) + np.pi) / (2 * np.pi)
+    hue.set_data(
+        hsv_to_rgb(np.stack([angle, np.ones_like(angle), np.ones_like(angle)], -1))[
+            None
+        ]
+    )
+    modulus = np.abs(psi[frame])
+    envelope.set_xy(
+        np.concatenate(
+            [
+                np.column_stack([position, modulus]),
+                np.column_stack([position[::-1], -modulus[::-1]]),
+            ]
+        )
+    )
+    hue.set_clip_path(envelope)
     clock.set_text(f"t = {time[frame]:5.1f} fs")
     figure.canvas.draw()
     # The canvas is rendered at the display's pixel ratio, so the picture is
