@@ -75,17 +75,17 @@ fn grid_evolution_matches_the_exact_modes() {
       (Complex::new(0.5, 0.5), 12.0 * step),
     ],
   );
-  let mut state = superposition.sampled(0.0, grid);
+  let mut state = superposition.on_grid(0.0, grid);
   for time in [0.0, 0.4, 3.0] {
     let evolved = state.clone().evolved(time, dispersion, grid);
-    let exact = superposition.sampled(time, grid);
+    let exact = superposition.on_grid(time, grid);
     for (here, there) in evolved.values.iter().zip(&exact.values) {
       assert!((here - there).norm() < 1e-10);
     }
   }
   state.evolve(1.0, dispersion, grid);
   assert!(
-    (state.total_intensity() - superposition.sampled(1.0, grid).total_intensity()).abs() < 1e-9
+    (state.total_intensity() - superposition.on_grid(1.0, grid).total_intensity()).abs() < 1e-9
   );
 }
 

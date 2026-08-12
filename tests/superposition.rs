@@ -198,7 +198,7 @@ fn the_grid_recovers_the_modes_it_resolves() {
     amplitudes.iter().copied().zip(wavenumbers.iter().copied()),
   );
 
-  let spectrum = superposition.sampled(0.0, grid).transformed();
+  let spectrum = superposition.on_grid(0.0, grid).transformed();
   let recovered = Superposition::from_grid(&spectrum, grid.dual(), dispersion);
 
   for position in positions() {
@@ -216,10 +216,10 @@ fn the_grid_aliases_what_it_cannot_resolve() {
   let inside = Superposition::in_medium(dispersion, [(Complex::ONE, 3.0 * step)]);
   let outside = Superposition::in_medium(dispersion, [(Complex::ONE, 67.0 * step)]);
   for (here, there) in inside
-    .sampled(0.0, grid)
+    .on_grid(0.0, grid)
     .values
     .iter()
-    .zip(&outside.sampled(0.0, grid).values)
+    .zip(&outside.on_grid(0.0, grid).values)
   {
     assert!((here - there).norm() < 1e-10);
   }

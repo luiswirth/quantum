@@ -29,8 +29,8 @@ impl Superposition {
   }
 
   /// `psi(t, x_j)`, which aliases whatever the grid does not resolve.
-  pub fn sampled(&self, time: f64, grid: Grid<Position>) -> GridState<Position> {
-    self.snapshot(time).sampled(grid)
+  pub fn on_grid(&self, time: f64, grid: Grid<Position>) -> GridState<Position> {
+    self.snapshot(time).on_grid(grid)
   }
 
   /// The instant the grid holds, given a history by the medium.
@@ -69,7 +69,7 @@ impl Superposition {
 
 impl Waveform {
   /// `psi(x_j)`, which aliases whatever the grid does not resolve.
-  pub fn sampled(&self, grid: Grid<Position>) -> GridState<Position> {
+  pub fn on_grid(&self, grid: Grid<Position>) -> GridState<Position> {
     GridState::new(
       grid
         .coordinates()
