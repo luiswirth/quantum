@@ -50,6 +50,10 @@
           (rust-bin.fromRustupToolchainFile ./rust-toolchain.toml)
           bacon
           cargo-edit
+          # The plots are python, whose own packages come from uv.
+          python3
+          uv
+          ruff
         ];
       };
     });
