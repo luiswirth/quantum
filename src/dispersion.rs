@@ -7,7 +7,7 @@ use crate::{
 /// says which way the wave travels.
 #[derive(Clone, Copy, Debug)]
 pub enum Dispersion {
-  /// `omega(k) = (hbar k^2) / (2 m)`
+  /// `omega(k) = (planck k^2) / (2 m)`
   FreeParticle { mass: f64 },
   /// `omega(k) = c abs(k)`
   Light { speed: f64 },
@@ -47,12 +47,12 @@ impl Dispersion {
     }
   }
 
-  /// `m^* = hbar / ((dif^2 omega) / (dif k^2))`
+  /// `m^* = planck / ((dif^2 omega) / (dif k^2))`
   pub fn effective_mass(&self, wavenumber: f64) -> f64 {
     HBAR / self.curvature(wavenumber)
   }
 
-  /// `E(p) = hbar omega(p / hbar)`
+  /// `E(p) = planck omega(p / planck)`
   pub fn energy(&self, momentum: f64) -> f64 {
     HBAR * self.frequency(momentum / HBAR)
   }

@@ -24,11 +24,11 @@ impl PlaneWave {
     Complex::from_polar(1.0, self.phase(position, time))
   }
 
-  /// `p = hbar k`
+  /// `p = planck k`
   pub fn momentum(&self) -> f64 {
     HBAR * self.wavenumber
   }
-  /// `E = hbar omega`
+  /// `E = planck omega`
   pub fn energy(&self) -> f64 {
     HBAR * self.frequency
   }
