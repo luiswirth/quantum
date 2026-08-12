@@ -6,3 +6,5 @@
 /.claude
 /.cursor
 /.pre-commit-config.yaml
+
+/viz/__pycache__
