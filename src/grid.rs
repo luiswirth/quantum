@@ -22,8 +22,11 @@ impl Domain for Momentum {
   const SIGN: f64 = 1.0;
 }
 
-/// `N` samples of spacing `dif x`, periodic over `L = N dif x`, indexed
-/// signed so that the samples straddle the origin.
+/// `N` samples of spacing `dif x`, periodic over `L = N dif x`.
+///
+/// The samples are indexed by `ZZ_N`, whose identity `0` is the origin and
+/// whose upper half are the negative residues, so that index arithmetic is
+/// already the grid's own translation.
 #[derive(Debug, PartialEq)]
 pub struct Grid<D: Domain> {
   pub npoints: usize,
@@ -54,8 +57,6 @@ impl<D: Domain> Grid<D> {
     self.npoints as f64 * self.spacing
   }
 
-  /// The index read as a signed offset from the origin, the upper half of the
-  /// range standing for the negative samples.
   pub fn offset(&self, index: usize) -> i64 {
     assert!(index < self.npoints);
     if 2 * index < self.npoints {
