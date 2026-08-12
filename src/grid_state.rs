@@ -1,6 +1,7 @@
 use crate::{
   Complex,
-  grid::{Domain, Grid},
+  dispersion::Dispersion,
+  grid::{Domain, Grid, Momentum, Position},
 };
 use rustfft::{FftDirection, FftPlanner};
 use std::marker::PhantomData;
@@ -74,5 +75,33 @@ impl<D: Domain> GridState<D> {
       *value *= scale;
     }
     GridState::new(self.values)
+  }
+}
+
+impl GridState<Momentum> {
+  /// Evolution is diagonal here, one turn of the phase per wavenumber.
+  pub fn evolve(&mut self, time: f64, dispersion: Dispersion, grid: Grid<Momentum>) {
+    assert_eq!(grid.npoints, self.npoints());
+    for (value, wavenumber) in self.values.iter_mut().zip(grid.coordinates()) {
+      *value *= Complex::from_polar(1.0, -dispersion.frequency(wavenumber) * time);
+    }
+  }
+  pub fn evolved(mut self, time: f64, dispersion: Dispersion, grid: Grid<Momentum>) -> Self {
+    self.evolve(time, dispersion, grid);
+    self
+  }
+}
+
+impl GridState<Position> {
+  /// The exact free propagator: into the domain that diagonalizes evolution,
+  /// and back.
+  pub fn evolve(&mut self, time: f64, dispersion: Dispersion, grid: Grid<Position>) {
+    let here = GridState::<Position>::new(std::mem::take(&mut self.values));
+    let there = here.transformed().evolved(time, dispersion, grid.dual());
+    self.values = there.transformed().values;
+  }
+  pub fn evolved(mut self, time: f64, dispersion: Dispersion, grid: Grid<Position>) -> Self {
+    self.evolve(time, dispersion, grid);
+    self
   }
 }

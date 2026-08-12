@@ -94,6 +94,18 @@ impl Comb {
       .sum()
   }
 
+  /// One tooth per sample, carrying its amplitude.
+  pub fn from_grid(state: &GridState<Position>, grid: Grid<Position>) -> Self {
+    assert_eq!(grid.npoints, state.npoints());
+    Self::new(
+      grid
+        .coordinates()
+        .zip(&state.values)
+        .map(|(position, amplitude)| Dirac::new(position) * *amplitude)
+        .collect(),
+    )
+  }
+
   /// The weights gathered onto the samples they fall nearest, which is what
   /// aliasing is on this side of the transform.
   pub fn on_grid(&self, grid: Grid<Position>) -> GridState<Position> {

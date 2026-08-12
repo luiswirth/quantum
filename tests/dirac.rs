@@ -79,3 +79,26 @@ fn two_firings_interfere_in_frequency() {
   assert!((excitation.transform_at(0.0, 0.0).norm() - 2.0).abs() < 1e-12);
   assert!(excitation.transform_at(std::f64::consts::PI, 0.0).norm() < 1e-12);
 }
+
+/// Reading a grid as teeth and gathering the teeth back is the identity.
+#[test]
+fn the_comb_and_the_grid_recover_each_other() {
+  let grid = grid();
+  let comb = Comb::new(
+    grid
+      .coordinates()
+      .enumerate()
+      .map(|(index, position)| {
+        Impulse::new(
+          Complex::new(index as f64, -(index as f64)),
+          Dirac::new(position),
+        )
+      })
+      .collect(),
+  );
+  let recovered = Comb::from_grid(&comb.on_grid(grid), grid);
+  for (before, after) in comb.terms.iter().zip(&recovered.terms) {
+    assert_eq!(before.amplitude, after.amplitude);
+    assert!((before.element.position - after.element.position).abs() < 1e-12);
+  }
+}

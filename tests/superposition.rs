@@ -199,7 +199,7 @@ fn the_grid_recovers_the_modes_it_resolves() {
   );
 
   let spectrum = superposition.sampled(0.0, grid).transformed();
-  let recovered = Superposition::from_spectrum(&spectrum, grid.dual(), dispersion);
+  let recovered = Superposition::from_grid(&spectrum, grid.dual(), dispersion);
 
   for position in positions() {
     assert!((recovered.at(0.9, position) - superposition.at(0.9, position)).norm() < 1e-10);
