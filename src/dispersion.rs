@@ -1,5 +1,5 @@
 use crate::{
-  plane_wave::PlaneWave,
+  plane_wave::{HarmonicWave, PlaneWave},
   units::{ELECTRON_MASS, HBAR, LIGHT_SPEED},
 };
 
@@ -63,6 +63,6 @@ impl Dispersion {
   }
 
   pub fn plane_wave(&self, wavenumber: f64) -> PlaneWave {
-    PlaneWave::new(self.frequency(wavenumber), wavenumber)
+    PlaneWave::new(self.frequency(wavenumber), HarmonicWave::new(wavenumber))
   }
 }

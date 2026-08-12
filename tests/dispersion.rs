@@ -42,7 +42,7 @@ fn energy_is_kinetic() {
   let dispersion = Dispersion::FreeParticle { mass };
   for wavenumber in wavenumbers() {
     let wave = dispersion.plane_wave(wavenumber);
-    let kinetic = wave.momentum().powi(2) / (2.0 * mass);
+    let kinetic = wave.harmonic.momentum().powi(2) / (2.0 * mass);
     assert!((wave.energy() - kinetic).abs() < 1e-12);
   }
 }
@@ -72,7 +72,7 @@ fn the_dispersion_relation_is_the_energy_momentum_relation() {
   let dispersion = Dispersion::electron();
   for wavenumber in wavenumbers() {
     let wave = dispersion.plane_wave(wavenumber);
-    assert!((dispersion.energy(wave.momentum()) - wave.energy()).abs() < 1e-12);
+    assert!((dispersion.energy(wave.harmonic.momentum()) - wave.energy()).abs() < 1e-12);
   }
 }
 

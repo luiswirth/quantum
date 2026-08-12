@@ -1,7 +1,7 @@
 use quantum::Complex;
 use quantum::dispersion::Dispersion;
 use quantum::grid::{Grid, Position};
-use quantum::plane_wave::{Mode, PlaneWave};
+use quantum::plane_wave::{HarmonicWave, Mode, PlaneWave};
 use quantum::superposition::Superposition;
 use std::f64::consts::TAU;
 
@@ -130,14 +130,18 @@ fn momentum_and_energy_are_conserved() {
       (Complex::ONE, -0.5),
     ],
   );
-  let momentum = superposition.expectation(PlaneWave::momentum);
+  let momentum = superposition.expectation(|wave: &PlaneWave| wave.harmonic.momentum());
   let energy = superposition.expectation(PlaneWave::energy);
-  let uncertainty = superposition.uncertainty(PlaneWave::momentum);
+  let uncertainty = superposition.uncertainty(|wave: &PlaneWave| wave.harmonic.momentum());
   for time in [0.3, 2.0, 11.0] {
     let waited = superposition.clone().evolved(time);
-    assert!((waited.expectation(PlaneWave::momentum) - momentum).abs() < 1e-12);
+    assert!(
+      (waited.expectation(|wave: &PlaneWave| wave.harmonic.momentum()) - momentum).abs() < 1e-12
+    );
     assert!((waited.expectation(PlaneWave::energy) - energy).abs() < 1e-12);
-    assert!((waited.uncertainty(PlaneWave::momentum) - uncertainty).abs() < 1e-12);
+    assert!(
+      (waited.uncertainty(|wave: &PlaneWave| wave.harmonic.momentum()) - uncertainty).abs() < 1e-12
+    );
   }
 }
 
@@ -147,8 +151,15 @@ fn one_mode_has_no_uncertainty() {
   let superposition =
     Superposition::in_medium(Dispersion::electron(), [(Complex::new(3.0, 4.0), 2.0)]);
   assert!((superposition.total_intensity() - 25.0).abs() < 1e-12);
-  assert!((superposition.expectation(|wave| wave.wavenumber) - 2.0).abs() < 1e-12);
-  assert!(superposition.uncertainty(|wave| wave.wavenumber).abs() < 1e-12);
+  assert!(
+    (superposition.expectation(|wave: &PlaneWave| wave.harmonic.wavenumber) - 2.0).abs() < 1e-12
+  );
+  assert!(
+    superposition
+      .uncertainty(|wave: &PlaneWave| wave.harmonic.wavenumber)
+      .abs()
+      < 1e-12
+  );
 }
 
 /// Two modes weighted equally sit halfway between them, and the uncertainty is
@@ -159,8 +170,12 @@ fn two_modes_straddle_their_center() {
     Dispersion::electron(),
     [(Complex::ONE, 1.0), (Complex::ONE, 3.0)],
   );
-  assert!((superposition.expectation(|wave| wave.wavenumber) - 2.0).abs() < 1e-12);
-  assert!((superposition.uncertainty(|wave| wave.wavenumber) - 1.0).abs() < 1e-12);
+  assert!(
+    (superposition.expectation(|wave: &PlaneWave| wave.harmonic.wavenumber) - 2.0).abs() < 1e-12
+  );
+  assert!(
+    (superposition.uncertainty(|wave: &PlaneWave| wave.harmonic.wavenumber) - 1.0).abs() < 1e-12
+  );
 }
 
 /// Sampling a superposition and transforming it recovers the amplitudes it

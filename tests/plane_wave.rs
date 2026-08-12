@@ -1,8 +1,8 @@
-use quantum::plane_wave::PlaneWave;
+use quantum::plane_wave::{HarmonicWave, PlaneWave};
 
 #[test]
 fn unit_modulus() {
-  let wave = PlaneWave::new(7.0, 3.0);
+  let wave = PlaneWave::new(7.0, HarmonicWave::new(3.0));
   for step in 0..100 {
     let position = step as f64 * 0.1;
     let time = step as f64 * 0.07;
@@ -12,7 +12,7 @@ fn unit_modulus() {
 
 #[test]
 fn phase_is_constant_along_the_phase_velocity() {
-  let wave = PlaneWave::new(7.0, 3.0);
+  let wave = PlaneWave::new(7.0, HarmonicWave::new(3.0));
   let velocity = wave.phase_velocity();
   let reference = wave.at(0.0, 0.0);
   for step in 0..100 {
