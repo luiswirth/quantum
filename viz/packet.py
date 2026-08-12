@@ -9,6 +9,7 @@ own envelope at half the speed.
 """
 
 import pathlib
+import subprocess
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -28,10 +29,12 @@ center = (density * position).sum(1) / density.sum(1)
 window = 12.0
 height = np.abs(psi).max()
 
-# A fixed axes rectangle, since an automatic layout would resize it whenever
-# the tick labels change width.
+# An even pixel count, which the encoder needs, and a fixed axes rectangle,
+# since an automatic layout would resize it whenever the tick labels change
+# width.
 shape = (6.5, 3.6)
-resolution = 110
+resolution = 150
+size = tuple(2 * round(length * resolution / 2) for length in shape)
 figure = plt.figure(figsize=shape, dpi=resolution)
 axes = figure.add_axes((0.10, 0.14, 0.87, 0.78))
 (real,) = axes.plot([], [], color="#3b6ea5", linewidth=1.2, label=r"$\Re\,\psi$")
@@ -42,34 +45,26 @@ axes.set_xlabel("position [nm]")
 axes.legend(loc="upper right")
 clock = axes.set_title("")
 
-# The canvas is rendered at the display's pixel ratio, which also scales the
-# figure's own dpi, so the asked for size is the one the frames are brought to.
-size = tuple(round(length * resolution) for length in shape)
+frames_per_second = 25
+command = (
+    f"ffmpeg -y -loglevel error"
+    f" -f rawvideo -pix_fmt rgb24 -s {size[0]}x{size[1]} -framerate {frames_per_second} -i -"
+    f" -c:v libx264 -preset slow -crf 15 -pix_fmt yuv420p -movflags +faststart"
+).split() + [str(out / "packet.mp4")]
+encoder = subprocess.Popen(command, stdin=subprocess.PIPE)
 
-
-def draw(frame):
+for frame in range(len(time)):
     axes.set_xlim(center[frame] - window, center[frame] + window)
     real.set_data(position, psi[frame].real)
     upper.set_data(position, np.abs(psi[frame]))
     lower.set_data(position, -np.abs(psi[frame]))
     clock.set_text(f"t = {time[frame]:5.1f} fs")
     figure.canvas.draw()
-    frame = Image.fromarray(np.asarray(figure.canvas.buffer_rgba())).convert("RGB")
-    return frame.resize(size, Image.LANCZOS)
+    # The canvas is rendered at the display's pixel ratio, so the picture is
+    # brought to the size asked for before it is handed over.
+    picture = Image.fromarray(np.asarray(figure.canvas.buffer_rgba())).convert("RGB")
+    encoder.stdin.write(picture.resize(size, Image.LANCZOS).tobytes())
 
-
-frames = [draw(index) for index in range(0, len(time), 2)]
-frames[0].save(
-    out / "packet.webp",
-    save_all=True,
-    append_images=frames[1:],
-    duration=50,
-    loop=0,
-    quality=90,
-    method=6,
-    # Every frame stands alone, so a player never rebuilds one from those
-    # before it.
-    kmin=1,
-    kmax=1,
-)
-frames[len(frames) // 2].save(out / "packet.png")
+encoder.stdin.close()
+encoder.wait()
+figure.savefig(out / "packet.png")
