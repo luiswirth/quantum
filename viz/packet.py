@@ -67,6 +67,9 @@ frames[0].save(
     loop=0,
     quality=90,
     method=6,
-    minimize_size=True,
+    # Every frame stands alone, so a player never rebuilds one from those
+    # before it.
+    kmin=1,
+    kmax=1,
 )
 frames[len(frames) // 2].save(out / "packet.png")
