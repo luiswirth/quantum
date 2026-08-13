@@ -8,21 +8,25 @@ The toolchain comes from the flake, which also installs the pre-commit hook.
 
 ## Layout
 
-Two dual bases, each in a space-only and a spacetime form, over one vector
-space.
+The exact and the discrete pictures are separate module trees, and what both
+consult sits above them.
 
-- `combination.rs`:
-  `Weighted<B>` and `Combination<B>`, the free complex vector space over a
-  basis type, carrying everything that holds whatever `B` is.
-- `plane_wave.rs`, `dirac.rs`:
-  the two bases and the aliases naming their weighted and combined forms.
+- `exact/`:
+  the states on the whole line. `combination.rs` is `Weighted<B>` and
+  `Combination<B>`, the free complex vector space over a basis type, carrying
+  everything that holds whatever `B` is; `plane_wave.rs` and `dirac.rs` are the
+  two dual bases, each in a space-only and a spacetime form, with the aliases
+  naming their weighted and combined forms; `superposition.rs` is the plane
+  wave combination.
+- `discrete/`:
+  the finite dimensional picture. `grid.rs` is the sample points and their
+  dual, `grid_state.rs` the values on them and the transform between the two
+  domains.
+- `sampling.rs`:
+  the bridge, in both directions, and the only module naming both sides.
 - `dispersion.rs`:
   the relation the medium ties frequency to wavenumber by, and the only place a
   medium enters.
-- `grid.rs`, `grid_state.rs`:
-  the finite dimensional picture, and the transform between the two domains.
-- `superposition.rs`:
-  the plane wave combination, and what joins the exact objects to the grid.
 - `units.rs`:
   the unit system every number is expressed in.
 
