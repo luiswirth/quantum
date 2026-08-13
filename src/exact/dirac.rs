@@ -1,8 +1,6 @@
 use crate::{
   Complex,
-  combination::{Combination, Weighted},
-  grid::{Grid, Position},
-  grid_state::GridState,
+  exact::combination::{Combination, Weighted},
 };
 use std::ops::Mul;
 
@@ -69,17 +67,6 @@ impl Impulse {
 pub type Comb = Combination<Dirac>;
 
 impl Comb {
-  /// A unit tooth on every sample, the operator that turns a function into its
-  /// samples.
-  pub fn sampling(grid: Grid<Position>) -> Self {
-    Self::new(
-      grid
-        .coordinates()
-        .map(|position| Impulse::new(Complex::ONE, Dirac::new(position)))
-        .collect(),
-    )
-  }
-
   /// `sum_j c_j f(x_j)`
   pub fn apply(&self, test: impl Fn(f64) -> Complex + Copy) -> Complex {
     self.terms.iter().map(|term| term.apply(test)).sum()
@@ -92,28 +79,6 @@ impl Comb {
       .iter()
       .map(|term| term.transform_at(wavenumber))
       .sum()
-  }
-
-  /// One tooth per sample, carrying its amplitude.
-  pub fn from_grid(state: &GridState<Position>, grid: Grid<Position>) -> Self {
-    assert_eq!(grid.npoints, state.npoints());
-    Self::new(
-      grid
-        .coordinates()
-        .zip(&state.values)
-        .map(|(position, amplitude)| Dirac::new(position) * *amplitude)
-        .collect(),
-    )
-  }
-
-  /// The weights gathered onto the samples they fall nearest, which is what
-  /// aliasing is on this side of the transform.
-  pub fn on_grid(&self, grid: Grid<Position>) -> GridState<Position> {
-    let mut values = vec![Complex::ZERO; grid.npoints];
-    for term in &self.terms {
-      values[grid.nearest_index(term.element.position)] += term.amplitude;
-    }
-    GridState::new(values)
   }
 }
 

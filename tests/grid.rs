@@ -1,4 +1,4 @@
-use quantum::grid::{Grid, Position};
+use quantum::discrete::grid::{Grid, Position};
 use std::f64::consts::TAU;
 
 fn grid() -> Grid<Position> {

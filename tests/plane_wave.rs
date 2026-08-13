@@ -1,4 +1,4 @@
-use quantum::plane_wave::{HarmonicWave, PlaneWave};
+use quantum::exact::plane_wave::{HarmonicWave, PlaneWave};
 
 #[test]
 fn unit_modulus() {

@@ -1,6 +1,6 @@
 use crate::{
   Complex,
-  combination::{Combination, Weighted},
+  exact::combination::{Combination, Weighted},
   units::HBAR,
 };
 use std::f64::consts::TAU;

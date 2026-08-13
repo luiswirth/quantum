@@ -1,8 +1,8 @@
 use quantum::Complex;
+use quantum::discrete::grid::{Grid, Position};
+use quantum::discrete::grid_state::GridState;
 use quantum::dispersion::Dispersion;
-use quantum::grid::{Grid, Position};
-use quantum::grid_state::GridState;
-use quantum::superposition::Superposition;
+use quantum::exact::superposition::Superposition;
 use std::f64::consts::TAU;
 
 fn grid() -> Grid<Position> {
