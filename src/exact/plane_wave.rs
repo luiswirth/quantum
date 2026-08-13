@@ -1,6 +1,9 @@
 use crate::{
   Complex,
-  exact::combination::{Combination, Weighted},
+  exact::{
+    combination::{Combination, Weighted},
+    operator::DiagonalOperator,
+  },
   units::HBAR,
 };
 use std::f64::consts::TAU;
@@ -121,5 +124,44 @@ impl Mul<Complex> for PlaneWave {
   type Output = Mode;
   fn mul(self, amplitude: Complex) -> Mode {
     Weighted::new(amplitude, self)
+  }
+}
+
+impl DiagonalOperator<HarmonicWave> {
+  /// `hat(p) = planck k`
+  pub fn momentum() -> Self {
+    Self::new(|harmonic: &HarmonicWave| harmonic.momentum().into())
+  }
+
+  /// `hat(k) = k`, the momentum in the units the basis is indexed by.
+  pub fn wavenumber() -> Self {
+    Self::new(|harmonic: &HarmonicWave| harmonic.wavenumber.into())
+  }
+
+  /// `hat(T) = p^2 / (2 m)`, the kinetic energy of a particle of that mass.
+  pub fn kinetic(mass: f64) -> Self {
+    Self::momentum().mapped(move |momentum| momentum.powi(2) / (2.0 * mass))
+  }
+
+  /// `hat(T)_a psi(x) = psi(x - a)`, whose eigenvalue `e^(i k a)` is the phase
+  /// Bloch's theorem gives a wave that is carried one period along a lattice.
+  pub fn translation(distance: f64) -> Self {
+    Self::new(move |harmonic: &HarmonicWave| {
+      Complex::from_polar(1.0, harmonic.wavenumber * distance)
+    })
+  }
+
+  /// The same operator on the spacetime form, which acts on the wave across
+  /// space and leaves the frequency alone.
+  pub fn on_plane_waves(self) -> DiagonalOperator<PlaneWave> {
+    DiagonalOperator::new(move |wave: &PlaneWave| self.eigenvalue(&wave.harmonic))
+  }
+}
+
+impl DiagonalOperator<PlaneWave> {
+  /// `hat(E) = planck omega`, which the spacetime basis carries by itself, the
+  /// medium having fixed the frequency already.
+  pub fn energy() -> Self {
+    Self::new(|wave: &PlaneWave| wave.energy().into())
   }
 }

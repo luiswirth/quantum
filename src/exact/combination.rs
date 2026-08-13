@@ -33,27 +33,6 @@ impl<B> Combination<B> {
   pub fn total_intensity(&self) -> f64 {
     self.terms.iter().map(Weighted::intensity).sum()
   }
-
-  /// `expect(f) = (sum_n abs(c_n)^2 f_n) / (sum_n abs(c_n)^2)`, for an
-  /// observable the basis diagonalizes.
-  pub fn expectation(&self, observable: impl Fn(&B) -> f64) -> f64 {
-    let weighted: f64 = self
-      .terms
-      .iter()
-      .map(|term| term.intensity() * observable(&term.element))
-      .sum();
-    weighted / self.total_intensity()
-  }
-
-  /// `variance(f) = expect(f^2) - expect(f)^2`
-  pub fn variance(&self, observable: impl Fn(&B) -> f64) -> f64 {
-    self.expectation(|element| observable(element).powi(2)) - self.expectation(&observable).powi(2)
-  }
-
-  /// `Delta f = sqrt(variance(f))`
-  pub fn uncertainty(&self, observable: impl Fn(&B) -> f64) -> f64 {
-    self.variance(observable).sqrt()
-  }
 }
 
 impl<B> From<Weighted<B>> for Combination<B> {

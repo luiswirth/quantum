@@ -2,5 +2,6 @@
 
 pub mod combination;
 pub mod dirac;
+pub mod operator;
 pub mod plane_wave;
 pub mod superposition;
