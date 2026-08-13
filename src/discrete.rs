@@ -2,3 +2,4 @@
 
 pub mod grid;
 pub mod grid_state;
+pub mod hamiltonian;
