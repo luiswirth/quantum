@@ -1,5 +1,5 @@
 use crate::{
-  plane_wave::{HarmonicWave, PlaneWave},
+  exact::plane_wave::{HarmonicWave, PlaneWave},
   units::{ELECTRON_MASS, HBAR, LIGHT_SPEED},
 };
 

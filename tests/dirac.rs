@@ -1,7 +1,7 @@
 use quantum::Complex;
-use quantum::dirac::{Comb, Dirac, Event, Excitation, Impulse, Source};
-use quantum::grid::{Grid, Position};
-use quantum::plane_wave::{HarmonicWave, PlaneWave};
+use quantum::discrete::grid::{Grid, Position};
+use quantum::exact::dirac::{Comb, Dirac, Event, Excitation, Impulse, Source};
+use quantum::exact::plane_wave::{HarmonicWave, PlaneWave};
 use std::f64::consts::TAU;
 
 fn grid() -> Grid<Position> {

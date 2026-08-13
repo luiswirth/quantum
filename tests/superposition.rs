@@ -1,8 +1,8 @@
 use quantum::Complex;
+use quantum::discrete::grid::{Grid, Position};
 use quantum::dispersion::Dispersion;
-use quantum::grid::{Grid, Position};
-use quantum::plane_wave::{HarmonicWave, Mode, PlaneWave};
-use quantum::superposition::Superposition;
+use quantum::exact::plane_wave::{Mode, PlaneWave};
+use quantum::exact::superposition::Superposition;
 use std::f64::consts::TAU;
 
 fn positions() -> impl Iterator<Item = f64> {

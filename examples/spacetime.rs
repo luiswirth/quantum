@@ -4,9 +4,11 @@ mod npy;
 
 use quantum::{
   Complex,
+  discrete::{
+    grid::{Grid, Position},
+    grid_state::GridState,
+  },
   dispersion::Dispersion,
-  grid::{Grid, Position},
-  grid_state::GridState,
 };
 
 fn main() -> std::io::Result<()> {

@@ -1,7 +1,7 @@
 use crate::{
   Complex,
+  discrete::grid::{Domain, Grid, Momentum, Position},
   dispersion::Dispersion,
-  grid::{Domain, Grid, Momentum, Position},
 };
 use rustfft::{FftDirection, FftPlanner};
 use std::marker::PhantomData;
