@@ -1,5 +1,8 @@
 use crate::{
-  exact::plane_wave::{HarmonicWave, PlaneWave},
+  exact::{
+    operator::DiagonalOperator,
+    plane_wave::{HarmonicWave, PlaneWave},
+  },
   units::{ELECTRON_MASS, HBAR, LIGHT_SPEED},
 };
 
@@ -64,5 +67,28 @@ impl Dispersion {
 
   pub fn plane_wave(&self, wavenumber: f64) -> PlaneWave {
     PlaneWave::new(self.frequency(wavenumber), HarmonicWave::new(wavenumber))
+  }
+}
+
+impl Dispersion {
+  /// `hat(H) = planck omega(k)`.
+  ///
+  /// The medium being homogeneous, it is invariant under every translation,
+  /// and the plane waves that diagonalize those diagonalize it too. Its
+  /// eigenvalue is the whole energy of the mode, which is kinetic only where
+  /// the medium carries no potential of its own.
+  pub fn hamiltonian(&self) -> DiagonalOperator<HarmonicWave> {
+    let dispersion = *self;
+    DiagonalOperator::new(move |harmonic: &HarmonicWave| {
+      (HBAR * dispersion.frequency(harmonic.wavenumber)).into()
+    })
+  }
+
+  /// `hat(v) = (dif omega) / (dif k)`, the velocity a wave packet travels at.
+  pub fn velocity(&self) -> DiagonalOperator<HarmonicWave> {
+    let dispersion = *self;
+    DiagonalOperator::new(move |harmonic: &HarmonicWave| {
+      dispersion.group_velocity(harmonic.wavenumber).into()
+    })
   }
 }

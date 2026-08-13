@@ -1,6 +1,9 @@
 use crate::{
   Complex,
-  exact::combination::{Combination, Weighted},
+  exact::{
+    combination::{Combination, Weighted},
+    operator::DiagonalOperator,
+  },
 };
 use std::ops::Mul;
 
@@ -123,5 +126,18 @@ impl Mul<Complex> for Event {
   type Output = Source;
   fn mul(self, amplitude: Complex) -> Source {
     Weighted::new(amplitude, self)
+  }
+}
+
+impl DiagonalOperator<Dirac> {
+  /// `hat(x) = x_0`
+  pub fn position() -> Self {
+    Self::new(|dirac: &Dirac| dirac.position.into())
+  }
+
+  /// `hat(V) = V(hat(x))`, a function of the position operator and so diagonal
+  /// wherever that one is.
+  pub fn potential(profile: impl Fn(f64) -> f64 + 'static) -> Self {
+    Self::new(move |dirac: &Dirac| profile(dirac.position).into())
   }
 }
